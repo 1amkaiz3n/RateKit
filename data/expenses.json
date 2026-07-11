@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Makan",
+    "amount": 900000,
+    "order": 0
+  },
+  {
+    "id": 2,
+    "name": "Rokok",
+    "amount": 900000,
+    "order": 1
+  },
+  {
+    "id": 3,
+    "name": "Wifi",
+    "amount": 165000,
+    "order": 2
+  },
+  {
+    "id": 4,
+    "name": "Listrik",
+    "amount": 300000,
+    "order": 3
+  }
+]

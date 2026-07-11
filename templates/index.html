@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RateKit - Freelancer Pricing Calculator</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white' font-family='Arial'%3E%3C!%5BCDATA[∑]]%3E%3C/text%3E%3C/svg%3E">
+    <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white' font-family='Arial'%3E%3C!%5BCDATA[∑]]%3E%3C/text%3E%3C/svg%3E">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: '#6366f1', secondary: '#4f46e5' } } }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
+        .dark .glass { background: rgba(31,41,55,0.7); border: 1px solid rgba(255,255,255,0.05); }
+        .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .dark .glass-card { background: rgba(31,41,55,0.8); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        .nav-item.active { color: #6366f1; background: rgba(99,102,241,0.1); font-weight: 600; }
+        .dark .nav-item.active { background: rgba(99,102,241,0.2); font-weight: 600; }
+        .stat-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 14px; }
+        .stat-icon i { font-size: 1.25rem; }
+        .prod-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .highlight-card { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+        .dark .highlight-card { background: linear-gradient(135deg, #4f46e5, #3730a3); }
+        .value-lg { font-size: 1.5rem; line-height: 2rem; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-64 glass fixed h-full z-20 flex flex-col">
+<div class="p-5 border-b border-gray-200 dark:border-gray-700">
+<div class="flex items-center gap-2.5">
+<img src="/static/ratekit-logo.svg" alt="RateKit" class="w-9 h-9">
+<h1 class="text-lg font-extrabold tracking-tight">RateKit</h1>
+</div>
+</div>
+<nav class="p-3 flex-1 space-y-1">
+<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium active" data-page="dashboard"><i class="fas fa-home w-5 text-center"></i> Dashboard</a>
+<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="expenses"><i class="fas fa-list w-5 text-center"></i> Biaya Operasional</a>
+<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="settings"><i class="fas fa-sliders w-5 text-center"></i> Pengaturan</a>
+<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="estimation"><i class="fas fa-calculator w-5 text-center"></i> Estimasi</a>
+<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="history"><i class="fas fa-clock-rotate-left w-5 text-center"></i> Riwayat</a>
+</nav>
+<div class="p-3 border-t border-gray-200 dark:border-gray-700 mt-auto">
+<button id="theme-toggle" class="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"><i id="theme-icon" class="fas fa-moon w-5 text-center"></i> <span id="theme-text">Dark Mode</span></button>
+</div>
+</aside>
+<main class="flex-1 ml-64 overflow-y-auto">
+<header class="glass sticky top-0 z-10 px-6 lg:px-8 py-3.5 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
+<h2 class="text-lg font-bold" id="page-title">Dashboard</h2>
+<div class="flex items-center gap-3">
+<img src="/static/ratekit-logo.svg" alt="RateKit" class="w-8 h-8">
+</div>
+</header>
+
+<!-- DASHBOARD -->
+<div id="dashboard-content" class="p-6 lg:p-8">
+<!-- Top Stats Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="stat-icon bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0"><i class="fas fa-wallet"></i></div>
+<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Target Gaji</p><h3 class="text-lg lg:value-lg font-bold truncate" id="target-salary">Rp0</h3></div>
+</div>
+</div>
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="stat-icon bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shrink-0"><i class="fas fa-receipt"></i></div>
+<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya Operasional</p><h3 class="text-lg lg:value-lg font-bold truncate" id="total-expenses">Rp0</h3></div>
+</div>
+</div>
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="stat-icon bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 shrink-0"><i class="fas fa-cubes"></i></div>
+<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Kebutuhan</p><h3 class="text-lg lg:value-lg font-bold truncate" id="total-monthly">Rp0</h3></div>
+</div>
+</div>
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="stat-icon bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0"><i class="fas fa-clock"></i></div>
+<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif Dasar/Jam</p><h3 class="text-lg lg:value-lg font-bold truncate" id="hourly-rate">Rp0</h3></div>
+</div>
+</div>
+</div>
+
+<!-- Productivity Row -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6">
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="prod-icon bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 shrink-0"><i class="fas fa-calendar-days"></i></div>
+<div><p class="text-xs font-medium text-gray-500">Hari Kerja/Bulan</p><p class="text-xl font-bold mt-0.5" id="working-days">22 Hari</p></div>
+</div>
+</div>
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="prod-icon bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shrink-0"><i class="fas fa-hourglass-half"></i></div>
+<div><p class="text-xs font-medium text-gray-500">Jam Produktif/Hari</p><p class="text-xl font-bold mt-0.5" id="productive-hours">6 Jam</p></div>
+</div>
+</div>
+<div class="glass-card p-4 lg:p-5 rounded-2xl">
+<div class="flex items-center gap-3 lg:gap-4">
+<div class="prod-icon bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0"><i class="fas fa-stopwatch"></i></div>
+<div><p class="text-xs font-medium text-gray-500">Jam Produktif/Bulan</p><p class="text-xl font-bold mt-0.5" id="monthly-productive-hours">132 Jam</p></div>
+</div>
+</div>
+</div>
+
+<!-- Ringkasan Tarif - Featured -->
+<div class="glass-card rounded-2xl mb-6 overflow-hidden">
+<div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-5 lg:px-6 py-3">
+<h3 class="text-white font-semibold text-sm flex items-center gap-2"><i class="fas fa-chart-line"></i> Ringkasan Tarif</h3>
+</div>
+<div class="p-5 lg:p-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400"><i class="fas fa-calculator"></i></div>
+<div><p class="text-xs text-gray-500 font-medium">Tarif Dasar</p><p class="text-xl font-bold mt-0.5" id="base-hourly-rate">Rp0</p></div>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400"><i class="fas fa-tag"></i></div>
+<div><p class="text-xs text-gray-500 font-medium">Tarif Jual <span class="text-indigo-500 font-semibold">(+<span id="profit-margin-display">30</span>%)</span></p><p class="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5" id="final-rate">Rp0</p></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Bottom Row: 2 Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="glass-card rounded-2xl">
+<div class="px-5 lg:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<h3 class="font-semibold text-sm flex items-center gap-2"><i class="fas fa-receipt text-gray-400"></i> Biaya Operasional</h3>
+<a href="#" class="text-xs font-medium text-primary hover:underline" data-page="expenses" id="goto-expenses">Kelola <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
+</div>
+<div id="expenses-list" class="p-5 lg:p-6 space-y-2"></div>
+</div>
+
+<div class="glass-card rounded-2xl">
+<div class="px-5 lg:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<h3 class="font-semibold text-sm flex items-center gap-2"><i class="fas fa-clock-rotate-left text-gray-400"></i> Riwayat Proyek</h3>
+<a href="#" class="text-xs font-medium text-primary hover:underline" data-page="history">Lihat Semua <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
+</div>
+<div id="dashboard-history-list" class="p-5 lg:p-6 space-y-2"></div>
+</div>
+</div>
+</div>
+
+<!-- BIAYA OPERASIONAL -->
+<div id="expenses-content" class="hidden p-8">
+<div class="glass-card p-6 rounded-xl mb-6">
+<h3 class="text-lg font-semibold mb-4">Tambah Biaya Operasional</h3>
+<div class="flex gap-3">
+<input type="text" id="new-expense-name" placeholder="Nama (contoh: Makan, Rokok, WiFi...)" class="flex-1 p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+<input type="number" id="new-expense-amount" placeholder="Jumlah (Rp)" class="w-48 p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+<button id="add-expense-btn" class="bg-primary hover:bg-secondary text-white font-medium py-3 px-5 rounded-lg whitespace-nowrap"><i class="fas fa-plus mr-2"></i>Tambah</button>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-lg font-semibold">Daftar Biaya</h3>
+<span class="text-sm text-gray-500">Total: <span id="expenses-total-label" class="font-semibold text-gray-800 dark:text-gray-200">Rp0</span></span>
+</div>
+<div id="expenses-manage-list" class="space-y-2"></div>
+<div id="expenses-empty" class="hidden text-center py-8 text-gray-500">
+<i class="fas fa-inbox text-4xl mb-3 block text-gray-300"></i>
+Belum ada biaya operasional. Tambahkan di atas.
+</div>
+</div>
+</div>
+
+<!-- MODAL EDIT -->
+<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+<div class="glass-card p-6 rounded-xl w-full max-w-md mx-4">
+<h3 class="text-lg font-semibold mb-4">Edit Biaya</h3>
+<div class="space-y-4">
+<div><label class="block text-sm font-medium mb-2">Nama</label><input type="text" id="edit-expense-name" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
+<div><label class="block text-sm font-medium mb-2">Jumlah (Rp)</label><input type="number" id="edit-expense-amount" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
+</div>
+<div class="flex gap-3 mt-6">
+<button id="edit-save-btn" class="flex-1 bg-primary hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg">Simpan</button>
+<button id="edit-cancel-btn" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium py-3 px-4 rounded-lg">Batal</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+<div class="glass-card p-6 rounded-xl w-full max-w-sm mx-4">
+<div class="flex items-center gap-3 mb-3">
+<div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg"><i class="fas fa-trash text-red-500"></i></div>
+<h3 class="text-lg font-semibold" id="confirm-modal-title">Hapus Item</h3>
+</div>
+<p class="text-gray-500 dark:text-gray-400 mb-6 text-sm" id="confirm-modal-message">Yakin ingin menghapus item ini?</p>
+<div class="flex gap-3">
+<button id="confirm-ok-btn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 px-4 rounded-lg">Hapus</button>
+<button id="confirm-cancel-btn" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium py-2.5 px-4 rounded-lg">Batal</button>
+</div>
+</div>
+</div>
+
+<!-- TOAST NOTIFIKASI -->
+<div id="toast" class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium transition-all">
+<i id="toast-icon" class="fas fa-check-circle text-green-400 dark:text-green-600"></i>
+<span id="toast-message">Berhasil</span>
+</div>
+
+<!-- PENGATURAN -->
+<div id="settings-content" class="hidden p-8">
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-lg font-semibold mb-6">Pengaturan Target dan Produktivitas</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div><label class="block text-sm font-medium mb-2">Target Gaji per Bulan</label><input type="number" id="target-salary-input" value="5000000" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
+<div><label class="block text-sm font-medium mb-2">Hari Kerja per Bulan</label><select id="working-days-input" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"><option value="20">20 Hari</option><option value="21">21 Hari</option><option value="22" selected>22 Hari</option><option value="24">24 Hari</option><option value="26">26 Hari</option></select></div>
+<div><label class="block text-sm font-medium mb-2">Jam Produktif per Hari</label><input type="number" id="productive-hours-input" value="6" min="1" max="24" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
+<div><label class="block text-sm font-medium mb-2">Margin Keuntungan (%)</label><input type="number" id="profit-margin-input" value="30" min="0" max="100" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
+</div>
+<button id="save-settings-btn" class="bg-primary hover:bg-secondary text-white font-medium py-3 px-6 rounded-lg"><i class="fas fa-save mr-2"></i>Simpan Pengaturan</button>
+</div>
+</div>
+
+<!-- ESTIMASI -->
+<div id="estimation-content" class="hidden p-8">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="glass-card p-6 rounded-xl">
+<h3 class="text-lg font-semibold mb-6">Buat Estimasi Proyek</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium mb-2">Nama Project</label>
+<input type="text" id="project-name" placeholder="Contoh: Bot Broadcast Telegram" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium mb-2">Estimasi Selesai</label>
+<select id="duration-input" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+<option value="1" data-unit="Jam">1 Jam</option>
+<option value="2" data-unit="Jam">2 Jam</option>
+<option value="3" data-unit="Jam" selected>3 Jam</option>
+<option value="4" data-unit="Jam">4 Jam</option>
+<option value="6" data-unit="Jam">6 Jam</option>
+<option value="8" data-unit="Jam">8 Jam</option>
+<option value="1" data-unit="Hari">1 Hari</option>
+<option value="2" data-unit="Hari">2 Hari</option>
+<option value="3" data-unit="Hari">3 Hari</option>
+<option value="5" data-unit="Hari">5 Hari</option>
+<option value="1" data-unit="Minggu">1 Minggu</option>
+<option value="2" data-unit="Minggu">2 Minggu</option>
+<option value="1" data-unit="Bulan">1 Bulan</option>
+<option value="2" data-unit="Bulan">2 Bulan</option>
+<option value="3" data-unit="Bulan">3 Bulan</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium mb-2">Biaya Tambahan (Rp)</label>
+<input type="number" id="additional-cost" value="0" min="0" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+</div>
+</div>
+<button id="calculate-project-btn" class="w-full bg-primary hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg"><i class="fas fa-calculator mr-2"></i>Hitung Estimasi</button>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col">
+<h3 class="text-lg font-semibold mb-6">Hasil Perhitungan</h3>
+<div class="space-y-3 flex-1">
+<div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+<span class="text-sm text-gray-500">Tarif per Jam</span>
+<span class="font-semibold" id="calc-final-rate">—</span>
+</div>
+<div class="flex justify-between items-center py-2">
+<span class="text-sm text-gray-500">Estimasi Selesai</span>
+<span class="font-semibold" id="calc-duration-display">—</span>
+</div>
+<div class="flex justify-between items-center py-2">
+<span class="text-sm text-gray-500">Biaya Tambahan</span>
+<span class="font-semibold" id="calc-additional-cost">—</span>
+</div>
+<div class="flex justify-between items-center py-3 mt-2 border-t-2 border-gray-200 dark:border-gray-600">
+<span class="font-semibold">Total Harga</span>
+<span class="font-bold text-xl" id="calc-total-price">—</span>
+</div>
+<div class="flex justify-between items-center py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-4">
+<span class="font-medium text-primary">Harga Rekomendasi</span>
+<span class="text-2xl font-bold text-primary" id="calc-recommended-price">—</span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+<input type="text" id="project-name-save" placeholder="Nama project untuk disimpan..." class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 mb-3">
+<button id="save-estimate-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg"><i class="fas fa-save mr-2"></i>Simpan ke Riwayat</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- RIWAYAT -->
+<div id="history-content" class="hidden p-8">
+<div class="glass-card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-6">Riwayat Estimasi Project</h3>
+<div class="overflow-x-auto"><table class="w-full">
+<thead><tr class="border-b border-gray-200 dark:border-gray-700"><th class="text-left py-3 px-4">Nama Project</th><th class="text-right py-3 px-4">Estimasi Selesai</th><th class="text-right py-3 px-4">Total Harga</th><th class="text-center py-3 px-4">Aksi</th></tr></thead>
+<tbody id="history-list"></tbody>
+</table></div>
+</div>
+</div>
+
+</main>
+</div>
+<script>
+const API_BASE = '/api';
+const formatCurrency = (v) => 'Rp'+Math.round(v).toLocaleString('id-ID');
+
+let editingExpenseId = null;
+let confirmCallback = null;
+
+const showToast = (message, isError = false) => {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toast-icon');
+    document.getElementById('toast-message').textContent = message;
+    icon.className = isError ? 'fas fa-circle-xmark text-red-400 dark:text-red-500' : 'fas fa-check-circle text-green-400 dark:text-green-600';
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 2500);
+};
+
+const showConfirm = (title, message, onOk) => {
+    document.getElementById('confirm-modal-title').textContent = title;
+    document.getElementById('confirm-modal-message').textContent = message;
+    confirmCallback = onOk;
+    document.getElementById('confirm-modal').classList.remove('hidden');
+};
+
+const closeConfirm = () => {
+    confirmCallback = null;
+    document.getElementById('confirm-modal').classList.add('hidden');
+};
+
+const updateDashboard = async () => {
+    const [settings, expenses, rates] = await Promise.all([
+        fetch(API_BASE+'/settings').then(r=>r.json()),
+        fetch(API_BASE+'/expenses').then(r=>r.json()),
+        fetch(API_BASE+'/hourly-rate').then(r=>r.json())
+    ]);
+    document.getElementById('target-salary').textContent = formatCurrency(settings.target_salary);
+    document.getElementById('working-days').textContent = settings.working_days+' Hari';
+    document.getElementById('productive-hours').textContent = settings.productive_hours+' Jam';
+    document.getElementById('profit-margin-display').textContent = settings.profit_margin;
+    const totalExp = expenses.reduce((s,e)=>s+e.amount,0);
+    document.getElementById('total-expenses').textContent = formatCurrency(totalExp);
+    document.getElementById('total-monthly').textContent = formatCurrency(rates.total_monthly);
+    document.getElementById('monthly-productive-hours').textContent = rates.monthly_productive_hours+' Jam';
+    document.getElementById('base-hourly-rate').textContent = formatCurrency(rates.hourly_rate);
+    document.getElementById('hourly-rate').textContent = formatCurrency(rates.hourly_rate);
+    document.getElementById('final-rate').textContent = formatCurrency(rates.final_rate);
+    const list = document.getElementById('expenses-list');
+    list.innerHTML = '';
+    if (expenses.length === 0) {
+        list.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada biaya operasional. <a href="#" class="text-primary underline" data-page="expenses">Tambah sekarang</a></p>';
+        list.querySelector('a')?.addEventListener('click', e => { e.preventDefault(); switchPage('expenses'); });
+    } else {
+        expenses.forEach(e => {
+            const item = document.createElement('div');
+            item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg';
+            item.innerHTML = `<span class="font-medium">${e.name}</span><span class="font-semibold text-gray-600 dark:text-gray-400">${formatCurrency(e.amount)}</span>`;
+            list.appendChild(item);
+        });
+    }
+    const projects = await (await fetch(API_BASE+'/projects')).json();
+    const dashList = document.getElementById('dashboard-history-list');
+    dashList.innerHTML = '';
+    if (projects.length === 0) {
+        dashList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada riwayat proyek.</p>';
+    } else {
+        projects.slice(0, 5).forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg';
+            item.innerHTML = `<span class="font-medium">${p.project_name}</span><span class="font-semibold text-gray-600 dark:text-gray-400">${formatCurrency(p.recommended_price)}</span>`;
+            dashList.appendChild(item);
+        });
+    }
+};
+
+const loadExpensesPage = async () => {
+    const expenses = await (await fetch(API_BASE+'/expenses')).json();
+    const list = document.getElementById('expenses-manage-list');
+    const empty = document.getElementById('expenses-empty');
+    const totalLabel = document.getElementById('expenses-total-label');
+    list.innerHTML = '';
+    const total = expenses.reduce((s,e)=>s+e.amount, 0);
+    totalLabel.textContent = formatCurrency(total);
+    if (expenses.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+    }
+    empty.classList.add('hidden');
+    expenses.forEach(e => {
+        const item = document.createElement('div');
+        item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg gap-3';
+        item.innerHTML = `
+            <span class="flex-1 font-medium">${e.name}</span>
+            <span class="font-semibold text-gray-600 dark:text-gray-400 min-w-max">${formatCurrency(e.amount)}</span>
+            <button onclick="openEditModal(${e.id}, '${e.name.replace(/'/g,"\\'")}', ${e.amount})" class="text-indigo-500 hover:text-indigo-700 p-1"><i class="fas fa-pen-to-square"></i></button>
+            <button onclick="confirmDeleteExpense(${e.id}, '${e.name.replace(/'/g,"\\'")}') " class="text-red-500 hover:text-red-700 p-1"><i class="fas fa-trash"></i></button>
+        `;
+        list.appendChild(item);
+    });
+};
+
+const addExpense = async () => {
+    const name = document.getElementById('new-expense-name').value.trim();
+    const amount = parseFloat(document.getElementById('new-expense-amount').value);
+    if (!name || !amount || amount <= 0) return;
+    await fetch(API_BASE+'/expenses', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, amount})
+    });
+    document.getElementById('new-expense-name').value = '';
+    document.getElementById('new-expense-amount').value = '';
+    await loadExpensesPage();
+    await updateDashboard();
+    showToast(`"${name}" berhasil ditambahkan`);
+};
+
+window.openEditModal = (id, name, amount) => {
+    editingExpenseId = id;
+    document.getElementById('edit-expense-name').value = name;
+    document.getElementById('edit-expense-amount').value = amount;
+    document.getElementById('edit-modal').classList.remove('hidden');
+};
+
+const closeEditModal = () => {
+    editingExpenseId = null;
+    document.getElementById('edit-modal').classList.add('hidden');
+};
+
+const saveEdit = async () => {
+    if (!editingExpenseId) return;
+    const name = document.getElementById('edit-expense-name').value.trim();
+    const amount = parseFloat(document.getElementById('edit-expense-amount').value);
+    if (!name || !amount || amount <= 0) return;
+    await fetch(API_BASE+`/expenses/${editingExpenseId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, amount})
+    });
+    closeEditModal();
+    await loadExpensesPage();
+    await updateDashboard();
+    showToast('Biaya berhasil diperbarui');
+};
+
+window.confirmDeleteExpense = (id, name) => {
+    showConfirm('Hapus Biaya', `Yakin ingin menghapus "${name}"?`, async () => {
+        await fetch(API_BASE+`/expenses/${id}`, {method: 'DELETE'});
+        closeConfirm();
+        await loadExpensesPage();
+        await updateDashboard();
+        showToast(`"${name}" dihapus`);
+    });
+};
+
+window.confirmDeleteProject = (id, name) => {
+    showConfirm('Hapus Project', `Yakin ingin menghapus "${name}"?`, async () => {
+        await fetch(API_BASE+`/projects/${id}`, {method: 'DELETE'});
+        closeConfirm();
+        loadHistory();
+        showToast(`"${name}" dihapus`);
+    });
+};
+
+const switchPage = (page) => {
+    document.querySelectorAll('.nav-item').forEach(n => {
+        n.classList.remove('active');
+        if (n.dataset.page === page) n.classList.add('active');
+    });
+    document.querySelectorAll('[id$="-content"]').forEach(c => {
+        c.classList.add('hidden');
+        if (c.id === page+'-content') c.classList.remove('hidden');
+    });
+    const titles = {dashboard:'Dashboard', expenses:'Biaya Operasional', settings:'Pengaturan', estimation:'Estimasi Proyek', history:'Riwayat'};
+    document.getElementById('page-title').textContent = titles[page] || page;
+    if (page === 'expenses') loadExpensesPage();
+    if (page === 'history') loadHistory();
+    if (page === 'dashboard') updateDashboard();
+};
+
+const saveSettings = async () => {
+    const data = {
+        target_salary: parseFloat(document.getElementById('target-salary-input').value),
+        working_days: parseInt(document.getElementById('working-days-input').value),
+        productive_hours: parseFloat(document.getElementById('productive-hours-input').value),
+        profit_margin: parseFloat(document.getElementById('profit-margin-input').value)
+    };
+    await fetch(API_BASE+'/settings', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    await updateDashboard();
+    showToast('Pengaturan tersimpan');
+};
+
+const calculateProject = async () => {
+    const sel = document.getElementById('duration-input');
+    const duration = parseFloat(sel.value);
+    const unit = sel.options[sel.selectedIndex].dataset.unit;
+    const addCost = parseFloat(document.getElementById('additional-cost').value) || 0;
+
+    const settings = await (await fetch(API_BASE+'/settings')).json();
+    let estimatedHours = 0;
+    if (unit === 'Jam') estimatedHours = duration;
+    else if (unit === 'Hari') estimatedHours = duration * settings.productive_hours;
+    else if (unit === 'Minggu') estimatedHours = duration * settings.productive_hours * 5;
+    else if (unit === 'Bulan') estimatedHours = duration * settings.productive_hours * settings.working_days;
+
+    const result = await (await fetch(`${API_BASE}/calculate-project?estimated_hours=${estimatedHours}&additional_cost=${addCost}`)).json();
+
+    document.getElementById('calc-final-rate').textContent = formatCurrency(result.final_rate);
+    document.getElementById('calc-duration-display').textContent = `${duration} ${unit} (${result.estimated_hours.toFixed(1)} Jam)`;
+    document.getElementById('calc-additional-cost').textContent = formatCurrency(result.additional_cost);
+    document.getElementById('calc-total-price').textContent = formatCurrency(result.total_price);
+    document.getElementById('calc-recommended-price').textContent = formatCurrency(result.recommended_price);
+
+    document.getElementById('project-name-save').value = document.getElementById('project-name').value;
+    return result;
+};
+
+const saveEstimate = async () => {
+    const name = document.getElementById('project-name-save').value.trim();
+    const addCost = parseFloat(document.getElementById('additional-cost').value) || 0;
+    if (!name) { showToast('Isi nama project dulu', true); return; }
+
+    const sel = document.getElementById('duration-input');
+    const duration = parseFloat(sel.value);
+    const unit = sel.options[sel.selectedIndex].dataset.unit;
+    const settings = await (await fetch(API_BASE+'/settings')).json();
+    let hours = 0;
+    if (unit === 'Jam') hours = duration;
+    else if (unit === 'Hari') hours = duration * settings.productive_hours;
+    else if (unit === 'Minggu') hours = duration * settings.productive_hours * 5;
+    else if (unit === 'Bulan') hours = duration * settings.productive_hours * settings.working_days;
+    if (!hours || hours <= 0) { showToast('Estimasi selesai harus lebih dari 0', true); return; }
+
+    await fetch(API_BASE+'/projects', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({project_name:name, estimated_hours:hours, additional_cost:addCost})});
+    document.getElementById('project-name').value = '';
+    document.getElementById('project-name-save').value = '';
+    showToast(`"${name}" berhasil disimpan`);
+};
+
+const loadHistory = async () => {
+    const projects = await (await fetch(API_BASE+'/projects')).json();
+    const tbody = document.getElementById('history-list');
+    tbody.innerHTML = '';
+    if (projects.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Belum ada riwayat estimasi</td></tr>';
+        return;
+    }
+    projects.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-200 dark:border-gray-700';
+        tr.innerHTML = `<td class="py-3 px-4">${p.project_name}</td><td class="text-right py-3 px-4">${p.estimated_hours} Jam</td><td class="text-right py-3 px-4">${formatCurrency(p.recommended_price)}</td><td class="text-center py-3 px-4"><button onclick="duplicateProject(${p.id}, '${p.project_name.replace(/'/g,"\\'")}' )" class="text-blue-600 mr-2"><i class="fas fa-copy"></i></button><button onclick="confirmDeleteProject(${p.id}, '${p.project_name.replace(/'/g,"\\'")}' )" class="text-red-600"><i class="fas fa-trash"></i></button></td>`;
+        tbody.appendChild(tr);
+    });
+};
+
+window.duplicateProject = async (id, name) => {
+    await fetch(API_BASE+`/projects/${id}/duplicate`,{method:'POST'});
+    loadHistory();
+    showToast(`"${name}" berhasil diduplikat`);
+};
+
+const loadSettingsForm = async () => {
+    const settings = await (await fetch(API_BASE+'/settings')).json();
+    document.getElementById('target-salary-input').value = settings.target_salary;
+    document.getElementById('working-days-input').value = settings.working_days;
+    document.getElementById('productive-hours-input').value = settings.productive_hours;
+    document.getElementById('profit-margin-input').value = settings.profit_margin;
+};
+
+const init = async () => {
+document.getElementById('theme-toggle').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    localStorage.setItem('ratekit_theme', isDark ? 'dark' : 'light');
+    document.getElementById('theme-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    document.getElementById('theme-icon').className = isDark ? 'fas fa-sun w-5 text-center' : 'fas fa-moon w-5 text-center';
+});
+    document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', e => { e.preventDefault(); switchPage(n.dataset.page); }));
+    document.getElementById('goto-expenses').addEventListener('click', e => { e.preventDefault(); switchPage('expenses'); });
+    document.getElementById('add-expense-btn').addEventListener('click', addExpense);
+    document.getElementById('new-expense-amount').addEventListener('keydown', e => { if (e.key === 'Enter') addExpense(); });
+    document.getElementById('new-expense-name').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('new-expense-amount').focus(); });
+    document.getElementById('edit-save-btn').addEventListener('click', saveEdit);
+    document.getElementById('edit-cancel-btn').addEventListener('click', closeEditModal);
+    document.getElementById('edit-modal').addEventListener('click', e => { if (e.target === document.getElementById('edit-modal')) closeEditModal(); });
+    document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); });
+    document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirm);
+    document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target === document.getElementById('confirm-modal')) closeConfirm(); });
+    document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+    document.getElementById('calculate-project-btn').addEventListener('click', calculateProject);
+    document.getElementById('save-estimate-btn').addEventListener('click', saveEstimate);
+    await loadSettingsForm();
+    await updateDashboard();
+    await loadHistory();
+if (localStorage.getItem('ratekit_theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+    document.getElementById('theme-text').textContent = 'Light Mode';
+    document.getElementById('theme-icon').className = 'fas fa-sun w-5 text-center';
+}
+};
+init();
+</script>
+</body>
+</html>

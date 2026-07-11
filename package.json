@@ -1,0 +1,13 @@
+{
+  "name": "ratekit",
+  "version": "1.0.0",
+  "description": "Freelancer Pricing Calculator - RateKit",
+  "main": "run.py",
+  "scripts": {
+    "start": "python3 run.py",
+    "dev": "python3 run.py"
+  },
+  "keywords": ["freelance", "pricing", "calculator"],
+  "author": "",
+  "license": "MIT"
+}
