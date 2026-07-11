@@ -68,7 +68,8 @@ Berarti kta bisa menawarkan harga project tersebut degan harga `214.500`,atu bbi
 
 
 
-> Rumus saya buat sendiri bukan hasil ChatGPT,makanya pusing.
+> Rumus saya buat sendiri bukan hasil ChatGPT,makanya pusing.Gak tau **Margin**/**Markup**.
+> 😄 Setidaknya bisa membantu saya sendiri.
 
 
 ## Cara Menggunakan
