@@ -18,20 +18,20 @@ Aplikasi web modern untuk membantu freelancer menghitung tarif dan harga proyek 
 ### 1. Install Dependencies
 
 ```bash
-pip install fastapi uvicorn python-multipart
+pip install -r requirements.txt
 ```
 
 ### 2. Jalankan Aplikasi
 
 ```bash
-cd /home/arifin/SC/RateKit
+cd RateKit
 python3 main.py
 ```
 
 Atau:
 
 ```bash
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 ### 3. Buka Browser
