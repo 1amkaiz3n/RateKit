@@ -1,76 +1,76 @@
 # RateKit - Freelancer Pricing Calculator
 
-Tools web untuk membantu freelancer menghitung tarif dan harga proyek.
+Aplikasi web untuk membantu freelancer menghitung tarif per jam dan menentukan harga proyek dengan akurat.
 
-Di dasari dengan pertanyaan,**berapa ya harga yang harus saya tentukan untuk project ini??**
+Dibuat karena satu masalah klasik: **"Bang, bikin bot berapa?"** — dan kita bengong sambil menghitung nasib finansial seperti manusia purba menghitung batu. 😄
 
-Saya membuat rumus seperti ini :
+---
 
-1. Tentukan Target gaji/bulan
-2. Tentukan biaya operasional
-3. Tentukan berapa hari kerja/bulan
-4. Tentukan jam kerja/hari
-5. Posisikan diri sebagai apa (pemula,junior,senior,expert)
+## Cara Kerja
 
-Contoh :
+### 1. Hitung Tarif per Jam
 
-1. Target gaji/bulan : 5 juta
-2. Biaya Operasional/bulan :
-  - Makan = `900` ribu
-  - Rokok = `900` ribu
-  - Wifi = `165` ribu
-  - Listrik = `300` ribu
-  - **Total** = `2.265.000`
-3. Dalam sebulan kerja senin-jumat berarti total `22` hari dalam sebulan
-4. Dalam sehari,kerja 6 jam,berarti dalam sebulan `132` jam
-5. Posisikan diri sebagai **Senior**
+Pertama, kamu tentukan target penghasilan dan produktivitas:
 
-**Rumus yang saya pakai :**
+| Variabel | Contoh |
+|---|---|
+| Target Gaji per Bulan | Rp5.000.000 |
+| Biaya Operasional per Bulan | Rp2.265.000 |
+| Total Kebutuhan Bulanan | **Rp7.265.000** |
+| Hari Kerja per Bulan | 22 hari |
+| Jam Produktif per Hari | 6 jam |
+| Jam Produktif per Bulan | **132 jam** |
 
-- Target gaji + Biaya operasional 
+**Rumus:**
+```
+Tarif Dasar per Jam = Total Kebutuhan Bulanan ÷ Jam Produktif Bulanan
+                    = Rp7.265.000 ÷ 132
+                    = Rp55.000/jam
+```
 
-  - `5.000.000` + `2.265.000` = `7.265.000`
+### 2. Tambahkan Target Keuntungan
 
-  - Total kebutuhan/bulan = `7.265.000`
+Kamu bisa menentukan Target Keuntungan (misalnya 30%) berdasarkan level skill atau posisi pasar.
 
-- Total Kebutuhan/bulan ÷ jam kerja
+**Rumus:**
+```
+Tarif Jual per Jam = Tarif Dasar × (1 + Target Keuntungan / 100)
+                   = Rp55.000 × (1 + 30/100)
+                   = Rp71.500/jam
+```
 
-  - `7.265.000` ÷ `132` = `55.000`
+### 3. Hitung Harga Proyek
 
-Jadi Tarif dasar nya adalah `Rp.55.000/jam`
+Estimasi total jam pengerjaan (bisa input dalam Jam, Hari, Minggu, atau Bulan — sistem akan otomatis konversi ke jam).
 
-Posisikan diri ini menentukan margin kita,misalkan kita bisa mengatur margin `30%` karena saya posisian diri sebagai senior,sebenarnya ini bebas aja sih mau menentukan berapa persen juga,**tergantung berapa kita mau menghargai skill kita**
+**Rumus:**
+```
+Harga Total = Tarif Jual × Estimasi Jam + Biaya Tambahan
+```
 
+### 4. Market Positioning
 
-Jadi,
-Tarif dasar x margin
+Setelah mendapat Harga Total, RateKit menampilkan tiga opsi harga:
 
-`55.000` x `30%` = `16.5000`
+| Posisi | Rumus | Contoh |
+|---|---|---|
+| **Minimum** | = Harga Total (dibulatkan ke Rp50.000 terdekat) | Rp300.000 |
+| **Ideal** | = Harga Total (dibulatkan ke Rp50.000 terdekat) | Rp300.000 |
+| **Premium** | = Harga Total × 1.3 (dibulatkan ke Rp50.000 terdekat) | Rp350.000 |
 
-`55.000 `+ `16.500` = `71.500`
+> Minimum dibuat sama dengan Total Harga agar kamu tidak menjual di bawah biaya produksi.
 
-**Penjelasan :**
+---
 
-  - `Rp55.000/jam` → **Tarif dasar** (**cost rate**). Ini adalah biaya minimum agar target gaji dan biaya operasional terpenuhi.
-  - `Rp71.500/jam` → **Tarif jual** (**billable rate**). Ini adalah harga yang kita tagihkan ke klien setelah ditambah margin.
+## Fitur
 
+- **Dashboard** — Ringkasan target gaji, biaya operasional, tarif dasar, dan tarif jual
+- **Biaya Operasional** — Kelola daftar pengeluaran bulanan
+- **Pengaturan** — Atur target gaji, hari kerja, jam produktif, target keuntungan
+- **Estimasi Proyek** — Hitung harga proyek dengan estimasi selesai (Jam/Hari/Minggu/Bulan) + Market Positioning
+- **Riwayat** — Simpan dan kelola riwayat estimasi proyek
 
-**Estimsi Project :**
-
-Misakln ada project **Bot Broadcast Telegram**,estimasi selesai nya 3 jam,berarti :
-
-`71.500 ` x `3` = `214.500`
-
-> Estimasi pengerjaan harus mempertimbangkan waktu coding, testing, revisi, deployment, dan komunikasi dengan klien. Jangan hanya menghitung waktu menulis kode.
-
-
-Berarti kta bisa menawarkan harga project tersebut degan harga `214.500`,atu bbisa di bulatkan menjadi `250.000`,,atau mau 500 ribu juga boleh sih.
-
-
-
-> Rumus saya buat sendiri bukan hasil ChatGPT,makanya pusing.Gak tau **Margin**/**Markup**.
-> 😄 Setidaknya bisa membantu saya sendiri.
-
+---
 
 ## Cara Menggunakan
 
@@ -90,21 +90,13 @@ python3 -m venv myenv
 ### 3. Aktifkan Virtual Environment
 
 **Linux / macOS**
-
 ```bash
 source myenv/bin/activate
 ```
 
 **Windows (CMD)**
-
 ```cmd
 myenv\Scripts\activate.bat
-```
-
-**Windows (PowerShell)**
-
-```powershell
-myenv\Scripts\Activate.ps1
 ```
 
 ### 4. Install Dependencies
@@ -115,14 +107,11 @@ pip install -r requirements.txt
 
 ### 5. Jalankan Aplikasi
 
-Menggunakan Python:
-
 ```bash
-python3 main.py
+python3 run.py
 ```
 
-Atau menggunakan Uvicorn (direkomendasikan saat development):
-
+Atau langsung dengan Uvicorn:
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
@@ -130,19 +119,36 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ### 6. Buka Aplikasi
 
 Buka browser dan akses:
-
 ```
 http://localhost:8000
 ```
 
+---
 
 ## Struktur Data
 
-Data disimpan dalam folder `data/`:
+Semua data disimpan dalam folder `data/` dalam format JSON:
 
-- `settings.json` - Pengaturan target gaji, hari kerja, jam produktif, margin
-- `expenses.json` - Daftar biaya operasional
-- `projects.json` - Riwayat estimasi proyek
+- `settings.json` — Pengaturan target gaji, hari kerja, jam produktif, target keuntungan
+- `expenses.json` — Daftar biaya operasional
+- `projects.json` — Riwayat estimasi proyek (termasuk harga minimum, ideal, premium)
 
+> Tidak menggunakan database. Semua data disimpan dalam file JSON — mudah di-backup, di-restore, atau dipindahkan.
 
->Aplikasi ini tidak menggunakan database apapun. Semua data disimpan dalam file JSON di folder `data/` sehingga sangat mudah untuk di-backup, di-restore, atau dipindahkan ke komputer lain.
+---
+
+## Rumus Lengkap
+
+```
+Tarif Dasar      = (Target Gaji + Total Biaya Operasional) ÷ (Hari Kerja × Jam Produktif)
+Tarif Jual       = Tarif Dasar × (1 + Target Keuntungan / 100)
+Harga Total      = Tarif Jual × Estimasi Jam + Biaya Tambahan
+Minimum          = roundUpKe50rb(Harga Total)
+Ideal            = roundUpKe50rb(Harga Total)
+Premium          = roundUpKe50rb(Harga Total × 1.3)
+```
+
+---
+
+> Rumus ini saya buat sendiri berdasarkan kebutuhan daily freelance. Bukan hasil ChatGPT. 😄
+> Setidaknya membantu saya sendiri — dan semoga membantu kamu juga.

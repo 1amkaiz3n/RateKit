@@ -1,11 +1,29 @@
 [
   {
     "id": 1,
-    "project_name": "Bot Broadcast Telegram",
-    "estimated_hours": 3,
+    "project_name": "MassBroadcast",
+    "estimated_hours": 30,
     "additional_cost": 0,
-    "created_at": "2026-07-11T14:32:53.579553",
-    "total_price": 214647.72727272724,
-    "recommended_price": 250000
+    "created_at": "2026-07-13T19:54:45.786218",
+    "total_price": 2641818.181818182,
+    "recommended_price": 2650000,
+    "harga_min": 2400000,
+    "harga_ideal": 2650000,
+    "harga_premium": 3450000,
+    "details": {
+      "target_salary": 5000000,
+      "total_expenses": 2265000,
+      "total_monthly_needs": 7265000,
+      "monthly_productive_hours": 132,
+      "base_hourly_rate": 55037.878787878784,
+      "target_profit_percentage": 60,
+      "final_rate": 88060.60606060606,
+      "estimated_hours_display": "5 Hari (30.0 Jam)",
+      "additional_cost": 0,
+      "total_price": 2641818.181818182,
+      "harga_min": 2400000,
+      "harga_ideal": 2650000,
+      "harga_premium": 3450000
+    }
   }
 ]

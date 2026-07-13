@@ -3,314 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RateKit - Freelancer Pricing Calculator</title>
+    <title>RateKit - Freelancer Pricing Intelligence</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white' font-family='Arial'%3E%3C!%5BCDATA[∑]]%3E%3C/text%3E%3C/svg%3E">
-    <link rel="shortcut icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' fill='white' font-family='Arial'%3E%3C!%5BCDATA[∑]]%3E%3C/text%3E%3C/svg%3E">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { primary: '#6366f1', secondary: '#4f46e5' } } }
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Fira Sans', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        primary: { DEFAULT: '#6366f1', 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' },
+                        surface: { light: '#ffffff', dark: '#0e1223' },
+                        card: { light: '#ffffff', dark: '#181c2e' },
+                        muted: { light: '#f1f5f9', dark: '#1a1e2f' },
+                        border: { light: '#e2e8f0', dark: '#2d3548' },
+                        accent: { green: '#16a34a', orange: '#ea580c', amber: '#d97706' },
+                    },
+                }
+            }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
-        .dark .glass { background: rgba(31,41,55,0.7); border: 1px solid rgba(255,255,255,0.05); }
-        .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .dark .glass-card { background: rgba(31,41,55,0.8); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        *, *::before, *::after { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
+        body { font-family: 'Fira Sans', system-ui, sans-serif; scroll-behavior: smooth; }
+        .glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.3); }
+        .dark .glass { background: rgba(14,18,35,0.7); border: 1px solid rgba(255,255,255,0.05); }
+        .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04); }
+        .dark .glass-card { background: rgba(24,28,46,0.85); border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.15); }
+        .glass-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.06); }
+        .dark .glass-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.3), 0 12px 32px rgba(0,0,0,0.2); }
+
+        .nav-item { transition: all 0.2s ease; cursor: pointer; }
         .nav-item.active { color: #6366f1; background: rgba(99,102,241,0.1); font-weight: 600; }
-        .dark .nav-item.active { background: rgba(99,102,241,0.2); font-weight: 600; }
+        .dark .nav-item.active { background: rgba(99,102,241,0.15); }
+        .nav-item:not(.active):hover { background: rgba(0,0,0,0.03); }
+        .dark .nav-item:not(.active):hover { background: rgba(255,255,255,0.03); }
+
         .stat-icon { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 14px; }
-        .stat-icon i { font-size: 1.25rem; }
-        .prod-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
-        .highlight-card { background: linear-gradient(135deg, #6366f1, #4f46e5); }
-        .dark .highlight-card { background: linear-gradient(135deg, #4f46e5, #3730a3); }
-        .value-lg { font-size: 1.5rem; line-height: 2rem; }
+        .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; font-weight: 600; border-radius: 12px; transition: all 0.2s ease; cursor: pointer; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.35); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-success { background: linear-gradient(135deg, #16a34a, #15803d); color: white; font-weight: 600; border-radius: 12px; transition: all 0.2s ease; cursor: pointer; }
+        .btn-success:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(22,163,74,0.35); }
+
+        input, select { transition: all 0.2s ease; }
+        input:focus, select:focus { outline: none; ring: 2px; ring-color: #6366f1; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+        .dark input, .dark select { background: #1a1e2f; border-color: #2d3548; color: #f1f5f9; }
+        .dark input:focus, .dark select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+
+        .stat-card { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6)); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); border-radius: 16px; transition: all 0.25s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+        .dark .stat-card { background: linear-gradient(135deg, rgba(24,28,46,0.9), rgba(24,28,46,0.6)); border-color: rgba(255,255,255,0.04); }
+        .dark .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+
+        .featured-gradient { background: linear-gradient(135deg, #6366f1, #4f46e5, #3730a3); }
+        .dark .featured-gradient { background: linear-gradient(135deg, #4f46e5, #3730a3, #312e81); }
+
+        .table-hover tr { transition: all 0.15s ease; cursor: pointer; }
+        .table-hover tr:hover { background: rgba(99,102,241,0.04); }
+        .dark .table-hover tr:hover { background: rgba(99,102,241,0.08); }
+
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .slide-up { animation: slideUp 0.4s ease forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        .fade-in { animation: fadeIn 0.3s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="bg-gradient-to-br from-slate-50 via-white to-indigo-50/40 dark:from-[#0a0e1a] dark:via-[#0e1223] dark:to-[#111827] text-slate-900 dark:text-gray-100 min-h-screen">
 <div class="flex h-screen overflow-hidden">
-<aside class="w-64 glass fixed h-full z-20 flex flex-col">
-<div class="p-5 border-b border-gray-200 dark:border-gray-700">
-<div class="flex items-center gap-2.5">
-<img src="/static/ratekit-logo.svg" alt="RateKit" class="w-9 h-9">
-<h1 class="text-lg font-extrabold tracking-tight">RateKit</h1>
-</div>
-</div>
-<nav class="p-3 flex-1 space-y-1">
-<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium active" data-page="dashboard"><i class="fas fa-home w-5 text-center"></i> Dashboard</a>
-<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="expenses"><i class="fas fa-list w-5 text-center"></i> Biaya Operasional</a>
-<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="settings"><i class="fas fa-sliders w-5 text-center"></i> Pengaturan</a>
-<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="estimation"><i class="fas fa-calculator w-5 text-center"></i> Estimasi</a>
-<a href="#" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium" data-page="history"><i class="fas fa-clock-rotate-left w-5 text-center"></i> Riwayat</a>
-</nav>
-<div class="p-3 border-t border-gray-200 dark:border-gray-700 mt-auto">
-<button id="theme-toggle" class="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800"><i id="theme-icon" class="fas fa-moon w-5 text-center"></i> <span id="theme-text">Dark Mode</span></button>
-</div>
-</aside>
-<main class="flex-1 ml-64 overflow-y-auto">
-<header class="glass sticky top-0 z-10 px-6 lg:px-8 py-3.5 flex justify-between items-center border-b border-gray-100 dark:border-gray-800">
-<h2 class="text-lg font-bold" id="page-title">Dashboard</h2>
-<div class="flex items-center gap-3">
-<img src="/static/ratekit-logo.svg" alt="RateKit" class="w-8 h-8">
-</div>
-</header>
 
-<!-- DASHBOARD -->
-<div id="dashboard-content" class="p-6 lg:p-8">
-<!-- Top Stats Grid -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="stat-icon bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0"><i class="fas fa-wallet"></i></div>
-<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Target Gaji</p><h3 class="text-lg lg:value-lg font-bold truncate" id="target-salary">Rp0</h3></div>
-</div>
-</div>
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="stat-icon bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shrink-0"><i class="fas fa-receipt"></i></div>
-<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya Operasional</p><h3 class="text-lg lg:value-lg font-bold truncate" id="total-expenses">Rp0</h3></div>
-</div>
-</div>
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="stat-icon bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 shrink-0"><i class="fas fa-cubes"></i></div>
-<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Kebutuhan</p><h3 class="text-lg lg:value-lg font-bold truncate" id="total-monthly">Rp0</h3></div>
-</div>
-</div>
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="stat-icon bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0"><i class="fas fa-clock"></i></div>
-<div class="min-w-0"><p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif Dasar/Jam</p><h3 class="text-lg lg:value-lg font-bold truncate" id="hourly-rate">Rp0</h3></div>
-</div>
-</div>
+    <!-- SIDEBAR -->
+    <aside class="w-64 glass fixed h-full z-30 flex flex-col shrink-0">
+        <div class="px-5 py-5 border-b border-gray-200/60 dark:border-gray-700/30">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl featured-gradient flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-indigo-500/25">∑</div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">RateKit</h1>
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-widest">Pricing Intelligence</p>
+                </div>
+            </div>
+        </div>
+        <nav class="p-3 flex-1 space-y-1">
+            <a href="#" class="nav-item active" data-page="dashboard"><div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm"><i class="fas fa-house w-5 text-center text-[15px]"></i> Dashboard</div></a>
+            <a href="#" class="nav-item" data-page="expenses"><div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm"><i class="fas fa-receipt w-5 text-center text-[15px]"></i> Biaya Operasional</div></a>
+            <a href="#" class="nav-item" data-page="settings"><div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm"><i class="fas fa-sliders w-5 text-center text-[15px]"></i> Pengaturan</div></a>
+            <a href="#" class="nav-item" data-page="estimation"><div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm"><i class="fas fa-calculator w-5 text-center text-[15px]"></i> Estimasi</div></a>
+            <a href="#" class="nav-item" data-page="history"><div class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm"><i class="fas fa-clock-rotate-left w-5 text-center text-[15px]"></i> Riwayat</div></a>
+            <div class="pt-4 mt-4 border-t border-gray-200/60 dark:border-gray-700/30">
+                <div class="px-3 py-2">
+                    <p class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-widest mb-2">Ringkasan</p>
+                    <div class="text-xs space-y-1.5">
+                        <div class="flex justify-between"><span class="text-gray-400">Tarif Dasar</span><span class="font-medium font-mono text-xs" id="sidebar-base-rate">Rp0</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Tarif Jual</span><span class="font-medium font-mono text-xs text-indigo-500" id="sidebar-final-rate">Rp0</span></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="p-3 border-t border-gray-200/60 dark:border-gray-700/30">
+            <button id="theme-toggle" class="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-medium hover:bg-gray-100/50 dark:hover:bg-white/5 transition-all"><i id="theme-icon" class="fas fa-moon w-5 text-center text-[15px]"></i> <span id="theme-text">Dark Mode</span></button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 ml-64 overflow-y-auto">
+        <header class="glass sticky top-0 z-20 px-6 lg:px-8 py-3.5 flex justify-between items-center border-b border-gray-200/50 dark:border-gray-700/20">
+            <div>
+                <h2 class="text-lg font-bold" id="page-title">Dashboard</h2>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5" id="page-subtitle">Overview penghasilan dan tarif Anda</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="pulse-dot bg-emerald-500"></span>
+                <span class="text-xs text-gray-400 font-medium mr-3" id="header-status">Siap</span>
+                <div class="w-8 h-8 rounded-xl featured-gradient flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-indigo-500/25">∑</div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard-content" class="p-6 lg:p-8 slide-up">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 mb-6">
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="stat-icon bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0"><i class="fas fa-wallet"></i></div>
+                        <div class="min-w-0"><p class="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Target Gaji</p><h3 class="text-lg lg:text-xl font-bold truncate font-mono" id="target-salary">Rp0</h3></div>
+                    </div>
+                </div>
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="stat-icon bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0"><i class="fas fa-receipt"></i></div>
+                        <div class="min-w-0"><p class="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Biaya Operasional</p><h3 class="text-lg lg:text-xl font-bold truncate font-mono" id="total-expenses">Rp0</h3></div>
+                    </div>
+                </div>
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="stat-icon bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 shrink-0"><i class="fas fa-cubes"></i></div>
+                        <div class="min-w-0"><p class="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Total Kebutuhan</p><h3 class="text-lg lg:text-xl font-bold truncate font-mono" id="total-monthly">Rp0</h3></div>
+                    </div>
+                </div>
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="stat-icon bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0"><i class="fas fa-clock"></i></div>
+                        <div class="min-w-0"><p class="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Tarif Dasar/Jam</p><h3 class="text-lg lg:text-xl font-bold truncate font-mono" id="hourly-rate">Rp0</h3></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 mb-6">
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0"><i class="fas fa-calendar-days"></i></div>
+                        <div><p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Hari Kerja</p><p class="text-lg font-bold mt-0.5 font-mono" id="working-days">22 Hari</p></div>
+                    </div>
+                </div>
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0"><i class="fas fa-hourglass-half"></i></div>
+                        <div><p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Jam Produktif</p><p class="text-lg font-bold mt-0.5 font-mono" id="productive-hours">6 Jam</p></div>
+                    </div>
+                </div>
+                <div class="stat-card p-4 lg:p-5">
+                    <div class="flex items-center gap-3 lg:gap-4">
+                        <div class="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0"><i class="fas fa-stopwatch"></i></div>
+                        <div><p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Jam/Bulan</p><p class="text-lg font-bold mt-0.5 font-mono" id="monthly-productive-hours">132 Jam</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl mb-6 overflow-hidden">
+                <div class="featured-gradient px-5 lg:px-7 py-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center text-white"><i class="fas fa-chart-simple"></i></div>
+                        <div><h3 class="text-white font-semibold text-sm">Ringkasan Tarif</h3><p class="text-white/60 text-[11px]">Berdasarkan pengaturan saat ini</p></div>
+                    </div>
+                </div>
+                <div class="p-5 lg:p-7">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-700/50 flex items-center justify-center text-gray-500 dark:text-gray-400"><i class="fas fa-calculator"></i></div>
+                            <div><p class="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">Tarif Dasar</p><p class="text-xl font-bold font-mono mt-0.5" id="base-hourly-rate">Rp0</p></div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 flex items-center justify-center text-indigo-600 dark:text-indigo-400"><i class="fas fa-tag"></i></div>
+                            <div><p class="text-[11px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider">Tarif Jual</p><p class="text-xl font-bold text-indigo-600 dark:text-indigo-400 font-mono mt-0.5" id="final-rate">Rp0</p></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700/30">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-400">Target Keuntungan</span>
+                            <span class="font-semibold text-emerald-600 dark:text-emerald-400"><span id="target-profit-percentage-display">30</span>%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-card rounded-2xl">
+                    <div class="px-5 lg:px-6 py-4 border-b border-gray-100/80 dark:border-gray-700/30 flex justify-between items-center">
+                        <h3 class="font-semibold text-sm flex items-center gap-2.5"><div class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 text-xs"><i class="fas fa-receipt"></i></div> Biaya Operasional</h3>
+                        <a href="#" class="text-xs font-medium text-indigo-500 hover:text-indigo-600 transition-colors" data-page="expenses" id="goto-expenses">Kelola <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
+                    </div>
+                    <div id="expenses-list" class="p-5 lg:p-6 space-y-2"></div>
+                </div>
+                <div class="glass-card rounded-2xl">
+                    <div class="px-5 lg:px-6 py-4 border-b border-gray-100/80 dark:border-gray-700/30 flex justify-between items-center">
+                        <h3 class="font-semibold text-sm flex items-center gap-2.5"><div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 text-xs"><i class="fas fa-clock-rotate-left"></i></div> Riwayat Proyek</h3>
+                        <a href="#" class="text-xs font-medium text-indigo-500 hover:text-indigo-600 transition-colors" data-page="history">Lihat Semua <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
+                    </div>
+                    <div id="dashboard-history-list" class="p-5 lg:p-6 space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BIAYA OPERASIONAL -->
+        <div id="expenses-content" class="hidden p-6 lg:p-8 slide-up">
+            <div class="glass-card p-6 rounded-xl mb-6">
+                <h3 class="text-base font-semibold mb-5 flex items-center gap-2.5"><div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-xs"><i class="fas fa-plus"></i></div> Tambah Biaya Operasional</h3>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <input type="text" id="new-expense-name" placeholder="Nama biaya (Makan, WiFi, Listrik...)" class="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-sm">
+                    <input type="number" id="new-expense-amount" placeholder="Jumlah (Rp)" class="sm:w-48 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-sm">
+                    <button id="add-expense-btn" class="btn-primary px-6 py-3 whitespace-nowrap text-sm"><i class="fas fa-plus mr-2"></i>Tambah</button>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl overflow-hidden">
+                <div class="px-5 lg:px-6 py-4 border-b border-gray-100/80 dark:border-gray-700/30 flex justify-between items-center">
+                    <h3 class="text-base font-semibold">Daftar Biaya</h3>
+                    <span class="text-sm text-gray-400">Total: <span id="expenses-total-label" class="font-semibold font-mono text-gray-700 dark:text-gray-200">Rp0</span></span>
+                </div>
+                <div id="expenses-manage-list" class="p-5 lg:p-6 space-y-2"></div>
+                <div id="expenses-empty" class="hidden text-center py-12 text-gray-400">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center text-2xl"><i class="fas fa-inbox"></i></div>
+                    <p class="font-medium">Belum ada biaya operasional</p>
+                    <p class="text-sm mt-1">Tambahkan biaya di atas untuk memulai</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODALS -->
+        <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div class="glass-card rounded-2xl p-6 w-full max-w-md mx-4 slide-up">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500"><i class="fas fa-pen-to-square text-sm"></i></div>
+                    <h3 class="text-lg font-semibold">Edit Biaya</h3>
+                </div>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Nama</label><input type="text" id="edit-expense-name" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"></div>
+                    <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Jumlah (Rp)</label><input type="number" id="edit-expense-amount" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"></div>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button id="edit-save-btn" class="flex-1 btn-primary py-3 text-sm">Simpan</button>
+                    <button id="edit-cancel-btn" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium py-3 rounded-xl transition-all text-sm">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div class="glass-card rounded-2xl p-6 w-full max-w-sm mx-4 slide-up">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-red-500"><i class="fas fa-trash text-sm"></i></div>
+                    <h3 class="text-lg font-semibold" id="confirm-modal-title">Hapus Item</h3>
+                </div>
+                <p class="text-gray-500 dark:text-gray-400 mb-6 text-sm" id="confirm-modal-message">Yakin ingin menghapus item ini?</p>
+                <div class="flex gap-3">
+                    <button id="confirm-ok-btn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-3 rounded-xl transition-all text-sm">Hapus</button>
+                    <button id="confirm-cancel-btn" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium py-3 rounded-xl transition-all text-sm">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-y-auto py-10 p-4">
+            <div class="glass-card rounded-2xl w-full max-w-2xl mx-auto my-auto slide-up">
+                <div class="p-6 border-b border-gray-100/80 dark:border-gray-700/30 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500"><i class="fas fa-file-lines text-sm"></i></div>
+                        <h3 class="text-lg font-bold" id="detail-project-title">Detail Project</h3>
+                    </div>
+                    <button id="detail-close-btn" class="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center transition-all"><i class="fas fa-xmark text-gray-400"></i></button>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100/50 dark:border-gray-700/20">
+                                <h4 class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4">Snapshot Pengaturan</h4>
+                                <div class="space-y-2.5 text-sm">
+                                    <div class="flex justify-between"><span class="text-gray-400">Target Gaji</span><span id="hist-target-salary" class="font-medium font-mono">—</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-400">Biaya Operasional</span><span id="hist-total-expenses" class="font-medium font-mono">—</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-400">Total Kebutuhan</span><span id="hist-total-monthly" class="font-medium font-mono">—</span></div>
+                                    <div class="border-t border-gray-200/50 dark:border-gray-700/20 pt-2.5 mt-2.5 space-y-2.5">
+                                        <div class="flex justify-between"><span class="text-gray-400">Tarif Dasar/Jam</span><span id="hist-base-rate" class="font-bold font-mono">—</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-400">Target Keuntungan</span><span id="hist-profit-margin" class="font-medium text-emerald-500 font-mono">—</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-400">Tarif Jual/Jam</span><span id="hist-final-rate" class="font-bold text-indigo-500 font-mono">—</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100/50 dark:border-gray-700/20">
+                                <h4 class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4">Detail Project</h4>
+                                <div class="space-y-2.5 text-sm">
+                                    <div class="flex justify-between"><span class="text-gray-400">Estimasi Waktu</span><span id="hist-estimated-hours" class="font-medium">—</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-400">Biaya Tambahan</span><span id="hist-additional-cost" class="font-medium font-mono">—</span></div>
+                                    <div class="border-t border-gray-200/50 dark:border-gray-700/20 pt-2.5 mt-2.5">
+                                        <div class="flex justify-between"><span class="font-semibold text-gray-600 dark:text-gray-300">Total Harga</span><span id="hist-total-price" class="font-bold text-lg font-mono text-gray-900 dark:text-white">—</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="p-5 bg-indigo-50/50 dark:bg-indigo-500/5 rounded-xl border border-indigo-100/50 dark:border-indigo-800/20">
+                                <h4 class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-4">Market Positioning</h4>
+                                <div class="space-y-3">
+                                    <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/30">
+                                        <p class="text-xs text-gray-400 font-medium">Minimum</p>
+                                        <p class="text-lg font-bold font-mono text-gray-600 dark:text-gray-300 mt-0.5" id="hist-harga-min">—</p>
+                                    </div>
+                                    <div class="text-center p-3 bg-indigo-500 rounded-xl ring-2 ring-indigo-200 dark:ring-indigo-700">
+                                        <p class="text-xs text-indigo-200 font-medium">Ideal</p>
+                                        <p class="text-xl font-extrabold font-mono text-white mt-0.5" id="hist-harga-ideal">—</p>
+                                    </div>
+                                    <div class="text-center p-3 bg-amber-500 rounded-xl">
+                                        <p class="text-xs text-amber-100 font-medium">Premium</p>
+                                        <p class="text-lg font-bold font-mono text-white mt-0.5" id="hist-harga-premium">—</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 italic text-center">Data snapshot saat perhitungan <span id="hist-created-at" class="font-medium not-italic">—</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-100/80 dark:border-gray-700/30 flex gap-3">
+                    <button id="detail-duplicate-btn" class="flex-1 btn-primary py-3 text-sm"><i class="fas fa-copy mr-2"></i>Duplikat Project</button>
+                    <button id="detail-delete-btn" class="px-5 bg-red-50 dark:bg-red-500/10 text-red-600 hover:bg-red-100 dark:hover:bg-red-500/20 font-medium py-3 rounded-xl transition-all text-sm"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOAST -->
+        <div id="toast" class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl bg-gray-900 dark:bg-gray-800 text-white text-sm font-medium transition-all slide-up border border-gray-700/50">
+            <i id="toast-icon" class="fas fa-check-circle text-emerald-400"></i>
+            <span id="toast-message">Berhasil</span>
+        </div>
+
+        <!-- PENGATURAN -->
+        <div id="settings-content" class="hidden p-6 lg:p-8 slide-up">
+            <div class="glass-card p-6 lg:p-7 rounded-xl">
+                <h3 class="text-base font-semibold mb-6 flex items-center gap-2.5"><div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 text-xs"><i class="fas fa-sliders"></i></div> Pengaturan Target dan Produktivitas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                    <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Target Gaji per Bulan</label><input type="number" id="target-salary-input" value="5000000" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm font-mono"></div>
+                    <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Hari Kerja per Bulan</label>
+                        <select id="working-days-input" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+                            <option value="20">20 Hari</option><option value="21">21 Hari</option><option value="22" selected>22 Hari</option>
+                            <option value="24">24 Hari</option><option value="26">26 Hari</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Jam Produktif per Hari</label><input type="number" id="productive-hours-input" value="6" min="1" max="24" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"></div>
+                    <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Target Keuntungan (%)</label><input type="number" id="target-profit-percentage-input" value="30" min="0" max="100" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm"></div>
+                </div>
+                <button id="save-settings-btn" class="btn-primary px-6 py-3 text-sm"><i class="fas fa-floppy-disk mr-2"></i>Simpan Pengaturan</button>
+            </div>
+        </div>
+
+        <!-- ESTIMASI -->
+        <div id="estimation-content" class="hidden p-6 lg:p-8 slide-up">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-2">
+                    <div class="glass-card p-6 rounded-xl">
+                        <h3 class="text-base font-semibold mb-5 flex items-center gap-2.5"><div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 text-xs"><i class="fas fa-calculator"></i></div> Hourly Calculator</h3>
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Nama Project</label><input type="text" id="project-name" placeholder="Contoh: Bot Broadcast Telegram" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-sm"></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Estimasi Selesai</label>
+                                    <select id="duration-input" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-sm">
+                                        <option value="1" data-unit="Jam">1 Jam</option><option value="2" data-unit="Jam">2 Jam</option><option value="3" data-unit="Jam" selected>3 Jam</option>
+                                        <option value="4" data-unit="Jam">4 Jam</option><option value="6" data-unit="Jam">6 Jam</option><option value="8" data-unit="Jam">8 Jam</option>
+                                        <option value="1" data-unit="Hari">1 Hari</option><option value="2" data-unit="Hari">2 Hari</option><option value="3" data-unit="Hari">3 Hari</option>
+                                        <option value="5" data-unit="Hari">5 Hari</option>
+                                        <option value="1" data-unit="Minggu">1 Minggu</option><option value="2" data-unit="Minggu">2 Minggu</option>
+                                        <option value="1" data-unit="Bulan">1 Bulan</option><option value="2" data-unit="Bulan">2 Bulan</option><option value="3" data-unit="Bulan">3 Bulan</option>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium mb-2 text-gray-500 dark:text-gray-400">Biaya Tambahan</label><input type="number" id="additional-cost" value="0" min="0" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm font-mono text-sm"></div>
+                            </div>
+                            <button id="calculate-project-btn" class="btn-primary w-full py-3.5 text-sm"><i class="fas fa-calculator mr-2"></i>Hitung Estimasi</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-3">
+                    <div class="glass-card p-6 rounded-xl">
+                        <h3 class="text-base font-semibold mb-5 flex items-center gap-2.5"><div class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 text-xs"><i class="fas fa-chart-bar"></i></div> Hasil Perhitungan Hourly</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100/50 dark:border-gray-700/20">
+                                <h4 class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Detail Perhitungan Tarif per Jam</h4>
+                                <div class="grid grid-cols-2 gap-2 text-sm">
+                                    <div class="flex justify-between px-2"><span class="text-gray-400 text-xs">Target Gaji</span><span class="font-medium font-mono text-xs" id="detail-target-salary">—</span></div>
+                                    <div class="flex justify-between px-2"><span class="text-gray-400 text-xs">Biaya Operasional</span><span class="font-medium font-mono text-xs" id="detail-total-expenses">—</span></div>
+                                    <div class="flex justify-between px-2"><span class="text-gray-400 text-xs">Kebutuhan Bulanan</span><span class="font-medium font-mono text-xs" id="detail-total-monthly-needs">—</span></div>
+                                    <div class="flex justify-between px-2"><span class="text-gray-400 text-xs">Jam Produktif</span><span class="font-medium font-mono text-xs" id="detail-monthly-productive-hours">—</span></div>
+                                    <div class="flex justify-between px-2 border-t border-gray-200/50 dark:border-gray-700/20 pt-2 mt-2 col-span-2"><span class="text-gray-500 text-xs font-semibold">Tarif Dasar/Jam</span><span class="font-bold font-mono text-xs" id="detail-base-hourly-rate">—</span></div>
+                                    <div class="flex justify-between px-2 col-span-2"><span class="text-gray-400 text-xs">Target Keuntungan</span><span class="font-medium text-emerald-500 font-mono text-xs" id="detail-target-profit-percentage">—</span></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center py-2.5 px-1 border-b border-gray-100 dark:border-gray-700/20">
+                                <span class="text-sm text-gray-500">Tarif Jual per Jam</span>
+                                <span class="font-semibold font-mono" id="calc-final-rate">—</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2.5 px-1">
+                                <span class="text-sm text-gray-500">Estimasi Selesai</span>
+                                <span class="font-semibold" id="calc-duration-display">—</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2.5 px-1">
+                                <span class="text-sm text-gray-500">Biaya Tambahan</span>
+                                <span class="font-semibold font-mono" id="calc-additional-cost">—</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3 px-1 border-t-2 border-gray-200 dark:border-gray-600">
+                                <span class="font-semibold text-gray-700 dark:text-gray-200">Total Harga</span>
+                                <span class="font-bold text-xl font-mono" id="calc-total-price">—</span>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100/50 dark:border-gray-700/20">
+                                <h4 class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-4">Market Positioning</h4>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700/30">
+                                        <p class="text-xs text-gray-400 font-medium">Minimum</p>
+                                        <p class="text-base font-bold font-mono text-gray-600 dark:text-gray-300 mt-1" id="calc-harga-min">—</p>
+                                    </div>
+                                    <div class="text-center p-3 bg-indigo-500 rounded-xl ring-2 ring-indigo-200 dark:ring-indigo-700">
+                                        <p class="text-xs text-indigo-200 font-medium">Ideal</p>
+                                        <p class="text-lg font-extrabold font-mono text-white mt-1" id="calc-harga-ideal">—</p>
+                                    </div>
+                                    <div class="text-center p-3 bg-amber-500 rounded-xl">
+                                        <p class="text-xs text-amber-100 font-medium">Premium</p>
+                                        <p class="text-base font-bold font-mono text-white mt-1" id="calc-harga-premium">—</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/20">
+                            <input type="text" id="project-name-save" placeholder="Nama project untuk disimpan..." class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-sm mb-3">
+                            <button id="save-estimate-btn" class="btn-success w-full py-3.5 text-sm"><i class="fas fa-floppy-disk mr-2"></i>Simpan ke Riwayat</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIWAYAT -->
+        <div id="history-content" class="hidden p-6 lg:p-8 slide-up">
+            <div class="glass-card rounded-xl overflow-hidden">
+                <div class="px-5 lg:px-6 py-4 border-b border-gray-100/80 dark:border-gray-700/30 flex items-center gap-3">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 text-xs"><i class="fas fa-clock-rotate-left"></i></div>
+                    <h3 class="text-base font-semibold">Riwayat Estimasi Project</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead><tr class="border-b border-gray-100 dark:border-gray-700/20"><th class="text-left py-3.5 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Nama Project</th><th class="text-right py-3.5 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Estimasi</th><th class="text-right py-3.5 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Harga</th><th class="text-center py-3.5 px-4 text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-10"><i class="fas fa-chevron-right text-xs"></i></th></tr></thead>
+                        <tbody id="history-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
 </div>
 
-<!-- Productivity Row -->
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6">
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="prod-icon bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 shrink-0"><i class="fas fa-calendar-days"></i></div>
-<div><p class="text-xs font-medium text-gray-500">Hari Kerja/Bulan</p><p class="text-xl font-bold mt-0.5" id="working-days">22 Hari</p></div>
-</div>
-</div>
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="prod-icon bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shrink-0"><i class="fas fa-hourglass-half"></i></div>
-<div><p class="text-xs font-medium text-gray-500">Jam Produktif/Hari</p><p class="text-xl font-bold mt-0.5" id="productive-hours">6 Jam</p></div>
-</div>
-</div>
-<div class="glass-card p-4 lg:p-5 rounded-2xl">
-<div class="flex items-center gap-3 lg:gap-4">
-<div class="prod-icon bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0"><i class="fas fa-stopwatch"></i></div>
-<div><p class="text-xs font-medium text-gray-500">Jam Produktif/Bulan</p><p class="text-xl font-bold mt-0.5" id="monthly-productive-hours">132 Jam</p></div>
-</div>
-</div>
-</div>
-
-<!-- Ringkasan Tarif - Featured -->
-<div class="glass-card rounded-2xl mb-6 overflow-hidden">
-<div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-5 lg:px-6 py-3">
-<h3 class="text-white font-semibold text-sm flex items-center gap-2"><i class="fas fa-chart-line"></i> Ringkasan Tarif</h3>
-</div>
-<div class="p-5 lg:p-6">
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-<div class="flex items-center gap-4">
-<div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400"><i class="fas fa-calculator"></i></div>
-<div><p class="text-xs text-gray-500 font-medium">Tarif Dasar</p><p class="text-xl font-bold mt-0.5" id="base-hourly-rate">Rp0</p></div>
-</div>
-<div class="flex items-center gap-4">
-<div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400"><i class="fas fa-tag"></i></div>
-<div><p class="text-xs text-gray-500 font-medium">Tarif Jual <span class="text-indigo-500 font-semibold">(+<span id="profit-margin-display">30</span>%)</span></p><p class="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5" id="final-rate">Rp0</p></div>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Bottom Row: 2 Columns -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-<div class="glass-card rounded-2xl">
-<div class="px-5 lg:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-<h3 class="font-semibold text-sm flex items-center gap-2"><i class="fas fa-receipt text-gray-400"></i> Biaya Operasional</h3>
-<a href="#" class="text-xs font-medium text-primary hover:underline" data-page="expenses" id="goto-expenses">Kelola <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
-</div>
-<div id="expenses-list" class="p-5 lg:p-6 space-y-2"></div>
-</div>
-
-<div class="glass-card rounded-2xl">
-<div class="px-5 lg:px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-<h3 class="font-semibold text-sm flex items-center gap-2"><i class="fas fa-clock-rotate-left text-gray-400"></i> Riwayat Proyek</h3>
-<a href="#" class="text-xs font-medium text-primary hover:underline" data-page="history">Lihat Semua <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
-</div>
-<div id="dashboard-history-list" class="p-5 lg:p-6 space-y-2"></div>
-</div>
-</div>
-</div>
-
-<!-- BIAYA OPERASIONAL -->
-<div id="expenses-content" class="hidden p-8">
-<div class="glass-card p-6 rounded-xl mb-6">
-<h3 class="text-lg font-semibold mb-4">Tambah Biaya Operasional</h3>
-<div class="flex gap-3">
-<input type="text" id="new-expense-name" placeholder="Nama (contoh: Makan, Rokok, WiFi...)" class="flex-1 p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-<input type="number" id="new-expense-amount" placeholder="Jumlah (Rp)" class="w-48 p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-<button id="add-expense-btn" class="bg-primary hover:bg-secondary text-white font-medium py-3 px-5 rounded-lg whitespace-nowrap"><i class="fas fa-plus mr-2"></i>Tambah</button>
-</div>
-</div>
-<div class="glass-card p-6 rounded-xl">
-<div class="flex justify-between items-center mb-4">
-<h3 class="text-lg font-semibold">Daftar Biaya</h3>
-<span class="text-sm text-gray-500">Total: <span id="expenses-total-label" class="font-semibold text-gray-800 dark:text-gray-200">Rp0</span></span>
-</div>
-<div id="expenses-manage-list" class="space-y-2"></div>
-<div id="expenses-empty" class="hidden text-center py-8 text-gray-500">
-<i class="fas fa-inbox text-4xl mb-3 block text-gray-300"></i>
-Belum ada biaya operasional. Tambahkan di atas.
-</div>
-</div>
-</div>
-
-<!-- MODAL EDIT -->
-<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-<div class="glass-card p-6 rounded-xl w-full max-w-md mx-4">
-<h3 class="text-lg font-semibold mb-4">Edit Biaya</h3>
-<div class="space-y-4">
-<div><label class="block text-sm font-medium mb-2">Nama</label><input type="text" id="edit-expense-name" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
-<div><label class="block text-sm font-medium mb-2">Jumlah (Rp)</label><input type="number" id="edit-expense-amount" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
-</div>
-<div class="flex gap-3 mt-6">
-<button id="edit-save-btn" class="flex-1 bg-primary hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg">Simpan</button>
-<button id="edit-cancel-btn" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium py-3 px-4 rounded-lg">Batal</button>
-</div>
-</div>
-</div>
-
-<!-- MODAL KONFIRMASI HAPUS -->
-<div id="confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-<div class="glass-card p-6 rounded-xl w-full max-w-sm mx-4">
-<div class="flex items-center gap-3 mb-3">
-<div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg"><i class="fas fa-trash text-red-500"></i></div>
-<h3 class="text-lg font-semibold" id="confirm-modal-title">Hapus Item</h3>
-</div>
-<p class="text-gray-500 dark:text-gray-400 mb-6 text-sm" id="confirm-modal-message">Yakin ingin menghapus item ini?</p>
-<div class="flex gap-3">
-<button id="confirm-ok-btn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 px-4 rounded-lg">Hapus</button>
-<button id="confirm-cancel-btn" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium py-2.5 px-4 rounded-lg">Batal</button>
-</div>
-</div>
-</div>
-
-<!-- TOAST NOTIFIKASI -->
-<div id="toast" class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium transition-all">
-<i id="toast-icon" class="fas fa-check-circle text-green-400 dark:text-green-600"></i>
-<span id="toast-message">Berhasil</span>
-</div>
-
-<!-- PENGATURAN -->
-<div id="settings-content" class="hidden p-8">
-<div class="glass-card p-6 rounded-xl">
-<h3 class="text-lg font-semibold mb-6">Pengaturan Target dan Produktivitas</h3>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-<div><label class="block text-sm font-medium mb-2">Target Gaji per Bulan</label><input type="number" id="target-salary-input" value="5000000" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
-<div><label class="block text-sm font-medium mb-2">Hari Kerja per Bulan</label><select id="working-days-input" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"><option value="20">20 Hari</option><option value="21">21 Hari</option><option value="22" selected>22 Hari</option><option value="24">24 Hari</option><option value="26">26 Hari</option></select></div>
-<div><label class="block text-sm font-medium mb-2">Jam Produktif per Hari</label><input type="number" id="productive-hours-input" value="6" min="1" max="24" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
-<div><label class="block text-sm font-medium mb-2">Margin Keuntungan (%)</label><input type="number" id="profit-margin-input" value="30" min="0" max="100" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"></div>
-</div>
-<button id="save-settings-btn" class="bg-primary hover:bg-secondary text-white font-medium py-3 px-6 rounded-lg"><i class="fas fa-save mr-2"></i>Simpan Pengaturan</button>
-</div>
-</div>
-
-<!-- ESTIMASI -->
-<div id="estimation-content" class="hidden p-8">
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-<div class="glass-card p-6 rounded-xl">
-<h3 class="text-lg font-semibold mb-6">Buat Estimasi Proyek</h3>
-<div class="space-y-4">
-<div>
-<label class="block text-sm font-medium mb-2">Nama Project</label>
-<input type="text" id="project-name" placeholder="Contoh: Bot Broadcast Telegram" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div>
-<label class="block text-sm font-medium mb-2">Estimasi Selesai</label>
-<select id="duration-input" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-<option value="1" data-unit="Jam">1 Jam</option>
-<option value="2" data-unit="Jam">2 Jam</option>
-<option value="3" data-unit="Jam" selected>3 Jam</option>
-<option value="4" data-unit="Jam">4 Jam</option>
-<option value="6" data-unit="Jam">6 Jam</option>
-<option value="8" data-unit="Jam">8 Jam</option>
-<option value="1" data-unit="Hari">1 Hari</option>
-<option value="2" data-unit="Hari">2 Hari</option>
-<option value="3" data-unit="Hari">3 Hari</option>
-<option value="5" data-unit="Hari">5 Hari</option>
-<option value="1" data-unit="Minggu">1 Minggu</option>
-<option value="2" data-unit="Minggu">2 Minggu</option>
-<option value="1" data-unit="Bulan">1 Bulan</option>
-<option value="2" data-unit="Bulan">2 Bulan</option>
-<option value="3" data-unit="Bulan">3 Bulan</option>
-</select>
-</div>
-<div>
-<label class="block text-sm font-medium mb-2">Biaya Tambahan (Rp)</label>
-<input type="number" id="additional-cost" value="0" min="0" class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-</div>
-</div>
-<button id="calculate-project-btn" class="w-full bg-primary hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg"><i class="fas fa-calculator mr-2"></i>Hitung Estimasi</button>
-</div>
-</div>
-<div class="glass-card p-6 rounded-xl flex flex-col">
-<h3 class="text-lg font-semibold mb-6">Hasil Perhitungan</h3>
-<div class="space-y-3 flex-1">
-<div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
-<span class="text-sm text-gray-500">Tarif per Jam</span>
-<span class="font-semibold" id="calc-final-rate">—</span>
-</div>
-<div class="flex justify-between items-center py-2">
-<span class="text-sm text-gray-500">Estimasi Selesai</span>
-<span class="font-semibold" id="calc-duration-display">—</span>
-</div>
-<div class="flex justify-between items-center py-2">
-<span class="text-sm text-gray-500">Biaya Tambahan</span>
-<span class="font-semibold" id="calc-additional-cost">—</span>
-</div>
-<div class="flex justify-between items-center py-3 mt-2 border-t-2 border-gray-200 dark:border-gray-600">
-<span class="font-semibold">Total Harga</span>
-<span class="font-bold text-xl" id="calc-total-price">—</span>
-</div>
-<div class="flex justify-between items-center py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl px-4">
-<span class="font-medium text-primary">Harga Rekomendasi</span>
-<span class="text-2xl font-bold text-primary" id="calc-recommended-price">—</span>
-</div>
-</div>
-<div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-<input type="text" id="project-name-save" placeholder="Nama project untuk disimpan..." class="w-full p-3 border rounded-lg bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 mb-3">
-<button id="save-estimate-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg"><i class="fas fa-save mr-2"></i>Simpan ke Riwayat</button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- RIWAYAT -->
-<div id="history-content" class="hidden p-8">
-<div class="glass-card p-6 rounded-xl"><h3 class="text-lg font-semibold mb-6">Riwayat Estimasi Project</h3>
-<div class="overflow-x-auto"><table class="w-full">
-<thead><tr class="border-b border-gray-200 dark:border-gray-700"><th class="text-left py-3 px-4">Nama Project</th><th class="text-right py-3 px-4">Estimasi Selesai</th><th class="text-right py-3 px-4">Total Harga</th><th class="text-center py-3 px-4">Aksi</th></tr></thead>
-<tbody id="history-list"></tbody>
-</table></div>
-</div>
-</div>
-
-</main>
-</div>
 <script>
 const API_BASE = '/api';
-const formatCurrency = (v) => 'Rp'+Math.round(v).toLocaleString('id-ID');
+const formatCurrency = (v) => 'Rp' + Math.round(v).toLocaleString('id-ID');
 
 let editingExpenseId = null;
 let confirmCallback = null;
@@ -319,7 +488,7 @@ const showToast = (message, isError = false) => {
     const toast = document.getElementById('toast');
     const icon = document.getElementById('toast-icon');
     document.getElementById('toast-message').textContent = message;
-    icon.className = isError ? 'fas fa-circle-xmark text-red-400 dark:text-red-500' : 'fas fa-check-circle text-green-400 dark:text-green-600';
+    icon.className = isError ? 'fas fa-circle-xmark text-red-400' : 'fas fa-check-circle text-emerald-400';
     toast.classList.remove('hidden');
     setTimeout(() => toast.classList.add('hidden'), 2500);
 };
@@ -336,6 +505,11 @@ const closeConfirm = () => {
     document.getElementById('confirm-modal').classList.add('hidden');
 };
 
+const updateSidebar = (rates) => {
+    document.getElementById('sidebar-base-rate').textContent = formatCurrency(rates.hourly_rate);
+    document.getElementById('sidebar-final-rate').textContent = formatCurrency(rates.final_rate);
+};
+
 const updateDashboard = async () => {
     const [settings, expenses, rates] = await Promise.all([
         fetch(API_BASE+'/settings').then(r=>r.json()),
@@ -345,7 +519,7 @@ const updateDashboard = async () => {
     document.getElementById('target-salary').textContent = formatCurrency(settings.target_salary);
     document.getElementById('working-days').textContent = settings.working_days+' Hari';
     document.getElementById('productive-hours').textContent = settings.productive_hours+' Jam';
-    document.getElementById('profit-margin-display').textContent = settings.profit_margin;
+    document.getElementById('target-profit-percentage-display').textContent = settings.target_profit_percentage;
     const totalExp = expenses.reduce((s,e)=>s+e.amount,0);
     document.getElementById('total-expenses').textContent = formatCurrency(totalExp);
     document.getElementById('total-monthly').textContent = formatCurrency(rates.total_monthly);
@@ -353,16 +527,17 @@ const updateDashboard = async () => {
     document.getElementById('base-hourly-rate').textContent = formatCurrency(rates.hourly_rate);
     document.getElementById('hourly-rate').textContent = formatCurrency(rates.hourly_rate);
     document.getElementById('final-rate').textContent = formatCurrency(rates.final_rate);
+    updateSidebar(rates);
     const list = document.getElementById('expenses-list');
     list.innerHTML = '';
     if (expenses.length === 0) {
-        list.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada biaya operasional. <a href="#" class="text-primary underline" data-page="expenses">Tambah sekarang</a></p>';
+        list.innerHTML = '<div class="text-center py-6 text-gray-400 text-sm"><i class="fas fa-inbox text-2xl mb-2 block"></i>Belum ada biaya. <a href="#" class="text-indigo-500 hover:underline font-medium" data-page="expenses">Tambah sekarang</a></div>';
         list.querySelector('a')?.addEventListener('click', e => { e.preventDefault(); switchPage('expenses'); });
     } else {
-        expenses.forEach(e => {
+        expenses.slice(0, 5).forEach(e => {
             const item = document.createElement('div');
-            item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg';
-            item.innerHTML = `<span class="font-medium">${e.name}</span><span class="font-semibold text-gray-600 dark:text-gray-400">${formatCurrency(e.amount)}</span>`;
+            item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl';
+            item.innerHTML = `<span class="font-medium text-sm">${e.name}</span><span class="font-semibold text-gray-500 dark:text-gray-400 font-mono text-sm">${formatCurrency(e.amount)}</span>`;
             list.appendChild(item);
         });
     }
@@ -370,12 +545,13 @@ const updateDashboard = async () => {
     const dashList = document.getElementById('dashboard-history-list');
     dashList.innerHTML = '';
     if (projects.length === 0) {
-        dashList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-4">Belum ada riwayat proyek.</p>';
+        dashList.innerHTML = '<div class="text-center py-6 text-gray-400 text-sm"><i class="fas fa-clock text-2xl mb-2 block"></i>Belum ada riwayat.</div>';
     } else {
         projects.slice(0, 5).forEach(p => {
             const item = document.createElement('div');
-            item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg';
-            item.innerHTML = `<span class="font-medium">${p.project_name}</span><span class="font-semibold text-gray-600 dark:text-gray-400">${formatCurrency(p.recommended_price)}</span>`;
+            item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl';
+            const price = p.details?.harga_ideal || p.harga_ideal || p.recommended_price;
+            item.innerHTML = `<span class="font-medium text-sm">${p.project_name}</span><span class="font-semibold text-indigo-500 font-mono text-sm">${formatCurrency(price)}</span>`;
             dashList.appendChild(item);
         });
     }
@@ -396,12 +572,12 @@ const loadExpensesPage = async () => {
     empty.classList.add('hidden');
     expenses.forEach(e => {
         const item = document.createElement('div');
-        item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg gap-3';
+        item.className = 'flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl gap-3';
         item.innerHTML = `
-            <span class="flex-1 font-medium">${e.name}</span>
-            <span class="font-semibold text-gray-600 dark:text-gray-400 min-w-max">${formatCurrency(e.amount)}</span>
-            <button onclick="openEditModal(${e.id}, '${e.name.replace(/'/g,"\\'")}', ${e.amount})" class="text-indigo-500 hover:text-indigo-700 p-1"><i class="fas fa-pen-to-square"></i></button>
-            <button onclick="confirmDeleteExpense(${e.id}, '${e.name.replace(/'/g,"\\'")}') " class="text-red-500 hover:text-red-700 p-1"><i class="fas fa-trash"></i></button>
+            <span class="flex-1 font-medium text-sm">${e.name}</span>
+            <span class="font-semibold text-gray-500 dark:text-gray-400 font-mono text-sm">${formatCurrency(e.amount)}</span>
+            <button onclick="openEditModal(${e.id}, '${e.name.replace(/'/g,"\\'")}', ${e.amount})" class="text-indigo-500 hover:text-indigo-700 p-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"><i class="fas fa-pen-to-square text-xs"></i></button>
+            <button onclick="confirmDeleteExpense(${e.id}, '${e.name.replace(/'/g,"\\'")}')" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"><i class="fas fa-trash text-xs"></i></button>
         `;
         list.appendChild(item);
     });
@@ -411,11 +587,7 @@ const addExpense = async () => {
     const name = document.getElementById('new-expense-name').value.trim();
     const amount = parseFloat(document.getElementById('new-expense-amount').value);
     if (!name || !amount || amount <= 0) return;
-    await fetch(API_BASE+'/expenses', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name, amount})
-    });
+    await fetch(API_BASE+'/expenses', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, amount})});
     document.getElementById('new-expense-name').value = '';
     document.getElementById('new-expense-amount').value = '';
     await loadExpensesPage();
@@ -440,11 +612,7 @@ const saveEdit = async () => {
     const name = document.getElementById('edit-expense-name').value.trim();
     const amount = parseFloat(document.getElementById('edit-expense-amount').value);
     if (!name || !amount || amount <= 0) return;
-    await fetch(API_BASE+`/expenses/${editingExpenseId}`, {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name, amount})
-    });
+    await fetch(API_BASE+`/expenses/${editingExpenseId}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, amount})});
     closeEditModal();
     await loadExpensesPage();
     await updateDashboard();
@@ -453,7 +621,7 @@ const saveEdit = async () => {
 
 window.confirmDeleteExpense = (id, name) => {
     showConfirm('Hapus Biaya', `Yakin ingin menghapus "${name}"?`, async () => {
-        await fetch(API_BASE+`/expenses/${id}`, {method: 'DELETE'});
+        await fetch(API_BASE+`/expenses/${id}`, {method:'DELETE'});
         closeConfirm();
         await loadExpensesPage();
         await updateDashboard();
@@ -463,7 +631,7 @@ window.confirmDeleteExpense = (id, name) => {
 
 window.confirmDeleteProject = (id, name) => {
     showConfirm('Hapus Project', `Yakin ingin menghapus "${name}"?`, async () => {
-        await fetch(API_BASE+`/projects/${id}`, {method: 'DELETE'});
+        await fetch(API_BASE+`/projects/${id}`, {method:'DELETE'});
         closeConfirm();
         loadHistory();
         showToast(`"${name}" dihapus`);
@@ -480,7 +648,10 @@ const switchPage = (page) => {
         if (c.id === page+'-content') c.classList.remove('hidden');
     });
     const titles = {dashboard:'Dashboard', expenses:'Biaya Operasional', settings:'Pengaturan', estimation:'Estimasi Proyek', history:'Riwayat'};
+    const subtitles = {dashboard:'Overview penghasilan dan tarif Anda', expenses:'Kelola pengeluaran bulanan', settings:'Atur target dan produktivitas', estimation:'Hitung harga proyek Anda', history:'Lihat kembali estimasi sebelumnya'};
     document.getElementById('page-title').textContent = titles[page] || page;
+    document.getElementById('page-subtitle').textContent = subtitles[page] || '';
+    document.getElementById('header-status').textContent = page === 'dashboard' ? 'Siap' : page === 'estimation' ? 'Mode Kalkulasi' : 'Aktif';
     if (page === 'expenses') loadExpensesPage();
     if (page === 'history') loadHistory();
     if (page === 'dashboard') updateDashboard();
@@ -491,7 +662,7 @@ const saveSettings = async () => {
         target_salary: parseFloat(document.getElementById('target-salary-input').value),
         working_days: parseInt(document.getElementById('working-days-input').value),
         productive_hours: parseFloat(document.getElementById('productive-hours-input').value),
-        profit_margin: parseFloat(document.getElementById('profit-margin-input').value)
+        target_profit_percentage: parseFloat(document.getElementById('target-profit-percentage-input').value)
     };
     await fetch(API_BASE+'/settings', {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
     await updateDashboard();
@@ -503,43 +674,59 @@ const calculateProject = async () => {
     const duration = parseFloat(sel.value);
     const unit = sel.options[sel.selectedIndex].dataset.unit;
     const addCost = parseFloat(document.getElementById('additional-cost').value) || 0;
-
-    const settings = await (await fetch(API_BASE+'/settings')).json();
+    const [settings, expenses, rates] = await Promise.all([
+        fetch(API_BASE+'/settings').then(r=>r.json()),
+        fetch(API_BASE+'/expenses').then(r=>r.json()),
+        fetch(API_BASE+'/hourly-rate').then(r=>r.json())
+    ]);
     let estimatedHours = 0;
     if (unit === 'Jam') estimatedHours = duration;
     else if (unit === 'Hari') estimatedHours = duration * settings.productive_hours;
     else if (unit === 'Minggu') estimatedHours = duration * settings.productive_hours * 5;
     else if (unit === 'Bulan') estimatedHours = duration * settings.productive_hours * settings.working_days;
-
     const result = await (await fetch(`${API_BASE}/calculate-project?estimated_hours=${estimatedHours}&additional_cost=${addCost}`)).json();
-
+    document.getElementById('detail-target-salary').textContent = formatCurrency(settings.target_salary);
+    document.getElementById('detail-total-expenses').textContent = formatCurrency(expenses.reduce((s,e)=>s+e.amount,0));
+    document.getElementById('detail-total-monthly-needs').textContent = formatCurrency(rates.total_monthly);
+    document.getElementById('detail-monthly-productive-hours').textContent = rates.monthly_productive_hours + ' Jam';
+    document.getElementById('detail-base-hourly-rate').textContent = formatCurrency(rates.hourly_rate);
+    document.getElementById('detail-target-profit-percentage').textContent = settings.target_profit_percentage + '%';
     document.getElementById('calc-final-rate').textContent = formatCurrency(result.final_rate);
     document.getElementById('calc-duration-display').textContent = `${duration} ${unit} (${result.estimated_hours.toFixed(1)} Jam)`;
     document.getElementById('calc-additional-cost').textContent = formatCurrency(result.additional_cost);
     document.getElementById('calc-total-price').textContent = formatCurrency(result.total_price);
-    document.getElementById('calc-recommended-price').textContent = formatCurrency(result.recommended_price);
-
+    document.getElementById('calc-harga-min').textContent = formatCurrency(result.harga_min);
+    document.getElementById('calc-harga-ideal').textContent = formatCurrency(result.harga_ideal);
+    document.getElementById('calc-harga-premium').textContent = formatCurrency(result.harga_premium);
     document.getElementById('project-name-save').value = document.getElementById('project-name').value;
     return result;
 };
 
 const saveEstimate = async () => {
     const name = document.getElementById('project-name-save').value.trim();
-    const addCost = parseFloat(document.getElementById('additional-cost').value) || 0;
     if (!name) { showToast('Isi nama project dulu', true); return; }
-
+    const result = await calculateProject();
+    if (!result) { showToast('Terjadi kesalahan', true); return; }
     const sel = document.getElementById('duration-input');
     const duration = parseFloat(sel.value);
     const unit = sel.options[sel.selectedIndex].dataset.unit;
-    const settings = await (await fetch(API_BASE+'/settings')).json();
-    let hours = 0;
-    if (unit === 'Jam') hours = duration;
-    else if (unit === 'Hari') hours = duration * settings.productive_hours;
-    else if (unit === 'Minggu') hours = duration * settings.productive_hours * 5;
-    else if (unit === 'Bulan') hours = duration * settings.productive_hours * settings.working_days;
-    if (!hours || hours <= 0) { showToast('Estimasi selesai harus lebih dari 0', true); return; }
-
-    await fetch(API_BASE+'/projects', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({project_name:name, estimated_hours:hours, additional_cost:addCost})});
+    const detailSettings = await (await fetch(API_BASE+'/settings')).json();
+    const detailExpenses = await (await fetch(API_BASE+'/expenses')).json();
+    const detailRates = await (await fetch(API_BASE+'/hourly-rate')).json();
+    const totalExp = detailExpenses.reduce((s,e)=>s+e.amount,0);
+    const details = {
+        target_salary: detailSettings.target_salary, total_expenses: totalExp,
+        total_monthly_needs: detailRates.total_monthly, monthly_productive_hours: detailRates.monthly_productive_hours,
+        base_hourly_rate: detailRates.hourly_rate, target_profit_percentage: detailSettings.target_profit_percentage,
+        final_rate: result.final_rate, estimated_hours_display: `${duration} ${unit} (${result.estimated_hours.toFixed(1)} Jam)`,
+        additional_cost: result.additional_cost, total_price: result.total_price,
+        harga_min: result.harga_min, harga_ideal: result.harga_ideal, harga_premium: result.harga_premium
+    };
+    await fetch(API_BASE+'/projects', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+        project_name: name, estimated_hours: result.estimated_hours, additional_cost: result.additional_cost,
+        total_price: result.total_price, recommended_price: result.harga_ideal,
+        harga_min: result.harga_min, harga_ideal: result.harga_ideal, harga_premium: result.harga_premium, details: details
+    })});
     document.getElementById('project-name').value = '';
     document.getElementById('project-name-save').value = '';
     showToast(`"${name}" berhasil disimpan`);
@@ -550,19 +737,50 @@ const loadHistory = async () => {
     const tbody = document.getElementById('history-list');
     tbody.innerHTML = '';
     if (projects.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Belum ada riwayat estimasi</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-12 text-gray-400"><i class="fas fa-clock text-3xl mb-3 block"></i>Belum ada riwayat estimasi</td></tr>';
         return;
     }
     projects.forEach(p => {
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-200 dark:border-gray-700';
-        tr.innerHTML = `<td class="py-3 px-4">${p.project_name}</td><td class="text-right py-3 px-4">${p.estimated_hours} Jam</td><td class="text-right py-3 px-4">${formatCurrency(p.recommended_price)}</td><td class="text-center py-3 px-4"><button onclick="duplicateProject(${p.id}, '${p.project_name.replace(/'/g,"\\'")}' )" class="text-blue-600 mr-2"><i class="fas fa-copy"></i></button><button onclick="confirmDeleteProject(${p.id}, '${p.project_name.replace(/'/g,"\\'")}' )" class="text-red-600"><i class="fas fa-trash"></i></button></td>`;
+        tr.className = 'border-b border-gray-100 dark:border-gray-700/20 cursor-pointer transition hover:bg-indigo-50/30 dark:hover:bg-indigo-500/5';
+        tr.onclick = () => showProjectDetail(p.id);
+        const mainPrice = p.details?.harga_ideal || p.harga_ideal || p.recommended_price;
+        tr.innerHTML =
+            `<td class="py-3.5 px-4"><span class="font-medium text-sm">${p.project_name}</span></td>` +
+            `<td class="text-right py-3.5 px-4 text-sm text-gray-500">${p.estimated_hours} Jam</td>` +
+            `<td class="text-right py-3.5 px-4 font-semibold font-mono text-sm text-indigo-500">${formatCurrency(mainPrice)}</td>` +
+            `<td class="text-center py-3.5 px-4 text-gray-300 dark:text-gray-600"><i class="fas fa-chevron-right text-xs"></i></td>`;
         tbody.appendChild(tr);
     });
 };
 
+let currentDetailProjectId = null;
+
+const showProjectDetail = async (projectId) => {
+    const projects = await (await fetch(API_BASE+'/projects')).json();
+    const p = projects.find(x => x.id === projectId);
+    if (!p) { showToast('Project tidak ditemukan', true); return; }
+    currentDetailProjectId = projectId;
+    const d = p.details || {};
+    document.getElementById('detail-project-title').textContent = p.project_name;
+    document.getElementById('hist-target-salary').textContent = formatCurrency(d.target_salary || 0);
+    document.getElementById('hist-total-expenses').textContent = formatCurrency(d.total_expenses || 0);
+    document.getElementById('hist-total-monthly').textContent = formatCurrency(d.total_monthly_needs || 0);
+    document.getElementById('hist-base-rate').textContent = formatCurrency(d.base_hourly_rate || 0);
+    document.getElementById('hist-profit-margin').textContent = (d.target_profit_percentage || 0) + '%';
+    document.getElementById('hist-final-rate').textContent = formatCurrency(d.final_rate || 0);
+    document.getElementById('hist-estimated-hours').textContent = d.estimated_hours_display || (p.estimated_hours + ' Jam');
+    document.getElementById('hist-additional-cost').textContent = formatCurrency(d.additional_cost || p.additional_cost || 0);
+    document.getElementById('hist-total-price').textContent = formatCurrency(d.total_price || p.total_price || 0);
+    document.getElementById('hist-harga-min').textContent = formatCurrency(d.harga_min || p.harga_min || 0);
+    document.getElementById('hist-harga-ideal').textContent = formatCurrency(d.harga_ideal || p.harga_ideal || 0);
+    document.getElementById('hist-harga-premium').textContent = formatCurrency(d.harga_premium || p.harga_premium || 0);
+    document.getElementById('hist-created-at').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('id-ID', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+    document.getElementById('detail-modal').classList.remove('hidden');
+};
+
 window.duplicateProject = async (id, name) => {
-    await fetch(API_BASE+`/projects/${id}/duplicate`,{method:'POST'});
+    await fetch(API_BASE+`/projects/${id}/duplicate`, {method:'POST'});
     loadHistory();
     showToast(`"${name}" berhasil diduplikat`);
 };
@@ -572,17 +790,17 @@ const loadSettingsForm = async () => {
     document.getElementById('target-salary-input').value = settings.target_salary;
     document.getElementById('working-days-input').value = settings.working_days;
     document.getElementById('productive-hours-input').value = settings.productive_hours;
-    document.getElementById('profit-margin-input').value = settings.profit_margin;
+    document.getElementById('target-profit-percentage-input').value = settings.target_profit_percentage;
 };
 
 const init = async () => {
-document.getElementById('theme-toggle').addEventListener('click', () => {
-    document.documentElement.classList.toggle('dark');
-    const isDark = document.documentElement.classList.contains('dark');
-    localStorage.setItem('ratekit_theme', isDark ? 'dark' : 'light');
-    document.getElementById('theme-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
-    document.getElementById('theme-icon').className = isDark ? 'fas fa-sun w-5 text-center' : 'fas fa-moon w-5 text-center';
-});
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        const isDark = document.documentElement.classList.contains('dark');
+        localStorage.setItem('ratekit_theme', isDark ? 'dark' : 'light');
+        document.getElementById('theme-text').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        document.getElementById('theme-icon').className = isDark ? 'fas fa-sun w-5 text-center text-[15px]' : 'fas fa-moon w-5 text-center text-[15px]';
+    });
     document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', e => { e.preventDefault(); switchPage(n.dataset.page); }));
     document.getElementById('goto-expenses').addEventListener('click', e => { e.preventDefault(); switchPage('expenses'); });
     document.getElementById('add-expense-btn').addEventListener('click', addExpense);
@@ -597,14 +815,18 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
     document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
     document.getElementById('calculate-project-btn').addEventListener('click', calculateProject);
     document.getElementById('save-estimate-btn').addEventListener('click', saveEstimate);
+    document.getElementById('detail-close-btn').addEventListener('click', () => { document.getElementById('detail-modal').classList.add('hidden'); });
+    document.getElementById('detail-modal').addEventListener('click', (e) => { if (e.target === document.getElementById('detail-modal')) document.getElementById('detail-modal').classList.add('hidden'); });
+    document.getElementById('detail-duplicate-btn').addEventListener('click', async () => { if (currentDetailProjectId) { await duplicateProject(currentDetailProjectId); document.getElementById('detail-modal').classList.add('hidden'); } });
+    document.getElementById('detail-delete-btn').addEventListener('click', async () => { if (currentDetailProjectId) { confirmDeleteProject(currentDetailProjectId); document.getElementById('detail-modal').classList.add('hidden'); } });
     await loadSettingsForm();
     await updateDashboard();
     await loadHistory();
-if (localStorage.getItem('ratekit_theme') === 'dark') {
-    document.documentElement.classList.add('dark');
-    document.getElementById('theme-text').textContent = 'Light Mode';
-    document.getElementById('theme-icon').className = 'fas fa-sun w-5 text-center';
-}
+    if (localStorage.getItem('ratekit_theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('theme-text').textContent = 'Light Mode';
+        document.getElementById('theme-icon').className = 'fas fa-sun w-5 text-center text-[15px]';
+    }
 };
 init();
 </script>
